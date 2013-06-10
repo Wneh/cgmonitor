@@ -1,16 +1,17 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/BurntSushi/toml"
-	"net"
+	"time"
 )
 
+//Struct representing the config.toml
 type tomlConfig struct {
-	Miners map[string]miner
+	Miners map[string]miner //Key is the miner name.
 }
 
+//Struct for config file type [miners.<foo>] 
 type miner struct {
 	IP string
 }
@@ -26,20 +27,15 @@ func main() {
 		return
 	}
 
+	//No errors from loading the config file to start
+	//fetching information from each miner
 	for minerName, miner := range config.Miners {
-		fmt.Printf("Server: %s(%s)\n", minerName, miner.ip)
+		fmt.Printf("Server: %s(%s)\n", minerName, miner.IP)
+		//Start one new gorutine for each miner
+		go rpcClient(minerName, miner.IP, 10)
 	}
-
-	conn, err := net.Dial("tcp", "192.168.1.102:4028")
-
-	c := Client{"Foo", "127.0.0.1", conn, 10}
-	fmt.Println("Client: ", c)
-
-	if err != nil {
-		panic(err)
+	for {
+		fmt.Println("spam")
+		time.Sleep(10 * time.Second)
 	}
-	fmt.Fprintf(conn, "{\"command\":\"version\"}")
-	status, err := bufio.NewReader(conn).ReadString('\n')
-
-	fmt.Println(status)
 }
