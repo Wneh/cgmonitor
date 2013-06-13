@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
+	"log"
 	"net"
 )
 
@@ -25,15 +27,28 @@ func rpcClient(name, ip string, refInt int) {
 
 	//Check for errors
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 
 	//Save it because it went well
 	c.Conn = conn
 	//Send test command
-	fmt.Fprintf(conn, "{\"command\":\"version\"}")
+	fmt.Println(sendCommand(&c.Conn, "{\"command\":\"version\"}"))
+}
+
+func sendCommand(conn *net.Conn, cmd string) string {
+	//Write the command to the socket
+	fmt.Fprintf(*conn, cmd)
 	//Read the response
-	status, err := bufio.NewReader(conn).ReadString('\n')
-	//Print it
-	fmt.Println(status)
+	status, err := bufio.NewReader(*conn).ReadString('\n')
+	//Check for any errors
+	if err != nil {
+		//If the error is not EOF then warn about it
+		if err != io.EOF {
+			log.Println("Sending command error: ", err)
+		}
+	}
+	//Return the status we got from the server
+	return status
 }
