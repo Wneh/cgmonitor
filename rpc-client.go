@@ -32,16 +32,17 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 		log.Println(err)
 		return
 	}
-
+	//Save it to the struct
 	c.Conn = conn
-	//c.Conn = createConnection(c.IP)
-	//Send test command
-	//fmt.Println(sendCommand(&c.Conn, "{\"command\":\"version\"}"))
 
 	//Continue asking the miner for the hashrate
 	for {
-		//Send and print the reponce
-		fmt.Println(sendCommand(&c.Conn, "{\"command\":\"summary\"}"))
+		//Lock because we going to write to the minerInfo
+		minerInfo.Mu.Lock()
+		//Get the new information
+		minerInfo.Hashrate = sendCommand(&c.Conn, "{\"command\":\"summary\"}")
+		//Now unlock
+		minerInfo.Mu.Unlock()
 		/* 
 		 * Note:
 		 *
@@ -79,8 +80,12 @@ func sendCommand(conn *net.Conn, cmd string) string {
 	if err != nil {
 		//Check for errors
 		if err == io.EOF {
-			//cgminer seems to close after each call so close the socket and dial it again
-			//log.Println("Sending command error: ", err)
+			/*
+			 * Cgminer sends out EOF after each call.
+			 * Catch this error because it's not really
+			 * an error that crash the program.
+			 */
+
 		} else {
 			//If the error is not EOF then warn about it
 			log.Println("Sending command error: ", err)

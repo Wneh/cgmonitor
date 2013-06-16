@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/BurntSushi/toml"
+	"log"
 	"sync"
 	"time"
 )
@@ -41,10 +42,16 @@ func main() {
 	for minerName, miner := range config.Miners {
 		fmt.Printf("Server: %s(%s)\n", minerName, miner.IP)
 		//Start one new gorutine for each miner
-		rpcClient(minerName, miner.IP, 10, &minerStruct)
+		go rpcClient(minerName, miner.IP, 10, &minerStruct)
 	}
 	for {
-		fmt.Println("spam")
-		time.Sleep(10 * time.Second)
+		//Lock it
+		minerStruct.Mu.Lock()
+		//Read it
+		log.Println(minerStruct.Hashrate)
+		//Unlock it
+		minerStruct.Mu.Unlock()
+		//Sleep for some time
+		time.Sleep(2 * time.Second)
 	}
 }
