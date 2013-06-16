@@ -54,7 +54,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 		c.Conn = createConnection(c.IP)
 
 		//Sleep for the a while
-		time.Sleep(10 * time.Second)
+		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
 	}
 }
 
