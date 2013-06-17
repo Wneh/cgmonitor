@@ -20,6 +20,7 @@ type miner struct {
 
 type MinerInformation struct {
 	Mu       sync.Mutex //So we dont read and write to it at the same time.
+	Name     string     //The miners name
 	Version  string     //Version responce
 	Hashrate string     //Hashrate response for the miner
 }
@@ -35,22 +36,35 @@ func main() {
 		return
 	}
 
-	minerStruct := MinerInformation{}
+	miners := make([]MinerInformation, len(config.Miners))
 
-	//No errors from loading the config file to start
-	//fetching information from each miner
+	//Start to grab information from every miner
 	for minerName, miner := range config.Miners {
-		fmt.Printf("Server: %s(%s)\n", minerName, miner.IP)
+		log.Printf("Server: %s(%s)\n", minerName, miner.IP)
+		//Create a new miner struct and add the name
+		minerStructTemp := MinerInformation{}
+		minerStructTemp.Name = minerName
+
+		//Add save it
+		miners = append(miners, minerStructTemp)
+
 		//Start one new gorutine for each miner
-		go rpcClient(minerName, miner.IP, 10, &minerStruct)
+		go rpcClient(minerName, miner.IP, 10, &minerStructTemp)
 	}
+
+	//Loop for ever
 	for {
-		//Lock it
-		minerStruct.Mu.Lock()
-		//Read it
-		log.Println(minerStruct.Hashrate)
-		//Unlock it
-		minerStruct.Mu.Unlock()
+		//Iterate over each miner reponce and print it
+		for _, minerInfo := range miners {
+			//Lock it
+			minerInfo.Mu.Lock()
+			//Read it
+			log.Println(minerInfo.Name)
+			log.Println(minerInfo.Hashrate)
+			log.Println("")
+			//Unlock it
+			minerInfo.Mu.Unlock()
+		}
 		//Sleep for some time
 		time.Sleep(2 * time.Second)
 	}
