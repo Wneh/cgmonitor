@@ -41,6 +41,8 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 		minerInfo.Mu.Lock()
 		//Get the new information
 		minerInfo.Hashrate = sendCommand(&c.Conn, "{\"command\":\"summary\"}")
+		//fmt.Println("RPC: ", minerInfo.Name)
+		//fmt.Println("RPC: ", minerInfo.Hashrate)
 		//Now unlock
 		minerInfo.Mu.Unlock()
 		/* 

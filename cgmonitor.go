@@ -36,7 +36,10 @@ func main() {
 		return
 	}
 
-	miners := make([]MinerInformation, len(config.Miners))
+	fmt.Println("Number of config miners", len(config.Miners))
+
+	//miners := make([]*MinerInformation, len(config.Miners))
+	var miners []*MinerInformation
 
 	//Start to grab information from every miner
 	for minerName, miner := range config.Miners {
@@ -46,24 +49,28 @@ func main() {
 		minerStructTemp.Name = minerName
 
 		//Add save it
-		miners = append(miners, minerStructTemp)
+		miners = append(miners, &minerStructTemp)
 
 		//Start one new gorutine for each miner
 		go rpcClient(minerName, miner.IP, 10, &minerStructTemp)
 	}
 
+	fmt.Println("Number of miners:", len(miners))
+
 	//Loop for ever
 	for {
 		//Iterate over each miner reponce and print it
 		for _, minerInfo := range miners {
+			var minerStructTemp = *minerInfo
 			//Lock it
-			minerInfo.Mu.Lock()
+			minerStructTemp.Mu.Lock()
 			//Read it
-			log.Println(minerInfo.Name)
-			log.Println(minerInfo.Hashrate)
-			log.Println("")
+			//log.Println(*minerInfo.Name)
+			log.Println("Main:", minerStructTemp.Name)
+			log.Println("Main:", minerStructTemp.Hashrate)
+			//log.Println("")
 			//Unlock it
-			minerInfo.Mu.Unlock()
+			minerStructTemp.Mu.Unlock()
 		}
 		//Sleep for some time
 		time.Sleep(2 * time.Second)
