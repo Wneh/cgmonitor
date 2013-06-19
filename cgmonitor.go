@@ -5,7 +5,8 @@ import (
 	"github.com/BurntSushi/toml"
 	"log"
 	"sync"
-	"time"
+	//"time"
+	"net/http"
 )
 
 //Struct representing the config.toml
@@ -57,22 +58,25 @@ func main() {
 
 	fmt.Println("Number of miners:", len(miners))
 
-	//Loop for ever
-	for {
-		//Iterate over each miner reponce and print it
-		for _, minerInfo := range miners {
-			var minerStructTemp = *minerInfo
-			//Lock it
-			minerStructTemp.Mu.Lock()
-			//Read it
-			//log.Println(*minerInfo.Name)
-			log.Println("Main:", minerStructTemp.Name)
-			log.Println("Main:", minerStructTemp.Hashrate)
-			//log.Println("")
-			//Unlock it
-			minerStructTemp.Mu.Unlock()
-		}
-		//Sleep for some time
-		time.Sleep(2 * time.Second)
-	}
+	// //Loop for ever
+	// for {
+	// 	//Iterate over each miner reponce and print it
+	// 	for _, minerInfo := range miners {
+	// 		var minerStructTemp = *minerInfo
+	// 		//Lock it
+	// 		minerStructTemp.Mu.Lock()
+	// 		//Read it
+	// 		//log.Println(*minerInfo.Name)
+	// 		log.Println("Main:", minerStructTemp.Name)
+	// 		log.Println("Main:", minerStructTemp.Hashrate)
+	// 		//log.Println("")
+	// 		//Unlock it
+	// 		minerStructTemp.Mu.Unlock()
+	// 	}
+	// 	//Sleep for some time
+	// 	time.Sleep(2 * time.Second)
+	// }
+
+	http.HandleFunc("/", handler)
+	http.ListenAndServe(":8080", nil)
 }
