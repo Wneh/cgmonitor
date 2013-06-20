@@ -61,6 +61,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 	}
 }
 
+// Returns a TCP connection to the ip 
 func createConnection(ip string) net.Conn {
 	conn, err := net.Dial("tcp", ip)
 
@@ -73,6 +74,7 @@ func createConnection(ip string) net.Conn {
 	return conn
 }
 
+// Sends a json rpc command to threw the socket and return the answer
 func sendCommand(conn *net.Conn, cmd string) string {
 	//Write the command to the socket
 	fmt.Fprintf(*conn, cmd)

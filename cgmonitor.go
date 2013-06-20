@@ -6,7 +6,6 @@ import (
 	"log"
 	"sync"
 	//"time"
-	"net/http"
 )
 
 //Struct representing the config.toml
@@ -26,6 +25,9 @@ type MinerInformation struct {
 	Hashrate string     //Hashrate response for the miner
 }
 
+//Global variabels
+var miners []*MinerInformation
+
 func main() {
 
 	//Start by reading the config file
@@ -40,7 +42,6 @@ func main() {
 	fmt.Println("Number of config miners", len(config.Miners))
 
 	//miners := make([]*MinerInformation, len(config.Miners))
-	var miners []*MinerInformation
 
 	//Start to grab information from every miner
 	for minerName, miner := range config.Miners {
@@ -77,6 +78,5 @@ func main() {
 	// 	time.Sleep(2 * time.Second)
 	// }
 
-	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8080", nil)
+	webServerMain()
 }
