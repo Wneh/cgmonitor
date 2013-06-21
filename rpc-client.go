@@ -98,3 +98,45 @@ func sendCommand(conn *net.Conn, cmd string) string {
 	//Return the status we got from the server
 	return status
 }
+
+/*
+ * Bellow here is only structs defined
+ * for converting json responces to
+ * structs.
+ */
+
+//{"command":"summary"}
+type SummaryResponce struct {
+	Status  []Status
+	Summary []struct {
+		Elapsed            int
+		MHSAv              float64 `json:"MHS av"`
+		FoundBlocks        int     `json:"Found blocks"`
+		Getworks           int
+		Accepted           int
+		Rejected           int
+		HardwareErrors     int `json:"Hardware Errors"`
+		Utility            float64
+		Discarded          int
+		Stale              int
+		GetFailures        int     `json:"Get Failures"`
+		LocalWork          int     `json:"Local Work"`
+		RemoteFailures     int     `json:"Remote Failures"`
+		NetworkBlocks      int     `json:"Network Blocks"`
+		TotalMH            float64 `json:"TotalMH"`
+		WorkUtility        float64 `json:"Work Utility"`
+		DifficultyAccepted int     `json:"Difficulty Accepted"`
+		DifficultyRejected int     `json:"Difficulty Rejected"`
+		DifficultyStale    int     `json:"Difficulty Stale"`
+		BestShare          int     `json:"Best Share"`
+	}
+	Id int
+}
+
+type Status struct {
+	Status      string
+	When        int
+	Code        int
+	Msg         string
+	Description string
+}
