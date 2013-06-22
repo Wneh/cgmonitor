@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -40,11 +41,31 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 		//Lock because we going to write to the minerInfo
 		minerInfo.Mu.Lock()
 		//Get the new information
-		minerInfo.Hashrate = sendCommand(&c.Conn, "{\"command\":\"summary\"}")
-		//fmt.Println("RPC: ", minerInfo.Name)
-		//fmt.Println("RPC: ", minerInfo.Hashrate)
+
+		b := []byte(sendCommand(&c.Conn, "{\"command\":\"summary\"}"))
+		//fmt.Printf("%#v", temp)
+
+		/*
+		 * Check for \x00 to remove
+		 */
+		if b[len(b)-1] == '\x00' {
+			b = b[0 : len(b)-1]
+		}
+
+		s := &SummaryResponse{}
+		err := json.Unmarshal(b, &s)
+
+		if err != nil {
+			//panic(err)
+			fmt.Println(err.Error())
+
+		}
+
+		//fmt.Printf("%s\n", s)
+
 		//Now unlock
 		minerInfo.Mu.Unlock()
+
 		/* 
 		 * Note:
 		 *
@@ -106,37 +127,40 @@ func sendCommand(conn *net.Conn, cmd string) string {
  */
 
 //{"command":"summary"}
-type SummaryResponce struct {
-	Status  []Status
-	Summary []struct {
-		Elapsed            int
-		MHSAv              float64 `json:"MHS av"`
-		FoundBlocks        int     `json:"Found blocks"`
-		Getworks           int
-		Accepted           int
-		Rejected           int
-		HardwareErrors     int `json:"Hardware Errors"`
-		Utility            float64
-		Discarded          int
-		Stale              int
-		GetFailures        int     `json:"Get Failures"`
-		LocalWork          int     `json:"Local Work"`
-		RemoteFailures     int     `json:"Remote Failures"`
-		NetworkBlocks      int     `json:"Network Blocks"`
-		TotalMH            float64 `json:"TotalMH"`
-		WorkUtility        float64 `json:"Work Utility"`
-		DifficultyAccepted int     `json:"Difficulty Accepted"`
-		DifficultyRejected int     `json:"Difficulty Rejected"`
-		DifficultyStale    int     `json:"Difficulty Stale"`
-		BestShare          int     `json:"Best Share"`
-	}
-	Id int
+type SummaryResponse struct {
+	//Status  []StatusObject  `json:"STATUS"`
+	Status  []StatusObject  `json:"STATUS"`
+	Summary []SummaryObject `json:"SUMMARY"`
+	Id      int             `json:"id"`
 }
 
-type Status struct {
-	Status      string
-	When        int
-	Code        int
-	Msg         string
-	Description string
+type StatusObject struct {
+	Status      string `json:"STATUS"`
+	When        int    `json:"When"`
+	Code        int    `json:"Code"`
+	Msg         string `json:"Msg"`
+	Description string `json:"Description"`
+}
+
+type SummaryObject struct {
+	Elapsed            int     `json:"Elapsed"`
+	MHSAv              float64 `json:"MHS av"`
+	FoundBlocks        int     `json:"Found blocks"`
+	Getworks           int     `json:"Getworks"`
+	Accepted           int     `json:"Accepted"`
+	Rejected           int     `json:"Rejected"`
+	HardwareErrors     int     `json:"Hardware Errors"`
+	Utility            float64 `json:"Utility"`
+	Discarded          int     `json:"Discarded"`
+	Stale              int     `json:"Stale"`
+	GetFailures        int     `json:"Get Failures"`
+	LocalWork          int     `json:"Local Work"`
+	RemoteFailures     int     `json:"Remote Failures"`
+	NetworkBlocks      int     `json:"Network Blocks"`
+	TotalMH            float64 `json:"TotalMH"`
+	WorkUtility        float64 `json:"Work Utility"`
+	DifficultyAccepted float64 `json:"Difficulty Accepted"`
+	DifficultyRejected float64 `json:"Difficulty Rejected"`
+	DifficultyStale    float64 `json:"Difficulty Stale"`
+	BestShare          int     `json:"Best Share"`
 }
