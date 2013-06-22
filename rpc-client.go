@@ -38,10 +38,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 
 	//Continue asking the miner for the hashrate
 	for {
-		//Lock because we going to write to the minerInfo
-		minerInfo.Mu.Lock()
 		//Get the new information
-
 		b := []byte(sendCommand(&c.Conn, "{\"command\":\"summary\"}"))
 		//fmt.Printf("%#v", temp)
 
@@ -52,16 +49,19 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 			b = b[0 : len(b)-1]
 		}
 
-		s := &SummaryResponse{}
+		s := SummaryResponse{}
 		err := json.Unmarshal(b, &s)
-
+		//Check for errors
 		if err != nil {
 			//panic(err)
 			fmt.Println(err.Error())
-
 		}
 
-		//fmt.Printf("%s\n", s)
+		//Lock because we going to write to the minerInfo
+		minerInfo.Mu.Lock()
+
+		//Save the summary
+		minerInfo.Summary = s
 
 		//Now unlock
 		minerInfo.Mu.Unlock()
