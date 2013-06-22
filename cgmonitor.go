@@ -19,16 +19,19 @@ type miner struct {
 }
 
 type MinerInformation struct {
-	Mu       sync.Mutex //So we dont read and write to it at the same time.
-	Name     string     //The miners name
-	Version  string     //Version responce
-	Hashrate string     //Hashrate response for the miner
+	Mu      sync.Mutex      //So we dont read and write to it at the same time.
+	Name    string          //The miners name
+	Version string          //Version responce
+	Summary SummaryResponse //Summary
 }
 
 //Global variabels
-var miners []*MinerInformation
+//var miners []*MinerInformation
+var miners map[string]*MinerInformation
 
 func main() {
+
+	miners = make(map[string]*MinerInformation)
 
 	//Start by reading the config file
 	var config tomlConfig
@@ -39,10 +42,6 @@ func main() {
 		return
 	}
 
-	fmt.Println("Number of config miners", len(config.Miners))
-
-	//miners := make([]*MinerInformation, len(config.Miners))
-
 	//Start to grab information from every miner
 	for minerName, miner := range config.Miners {
 		log.Printf("Server: %s(%s)\n", minerName, miner.IP)
@@ -51,7 +50,8 @@ func main() {
 		minerStructTemp.Name = minerName
 
 		//Add save it
-		miners = append(miners, &minerStructTemp)
+		//miners = append(miners, &minerStructTemp)
+		miners[minerName] = &minerStructTemp
 
 		//Start one new gorutine for each miner
 		go rpcClient(minerName, miner.IP, 10, &minerStructTemp)
