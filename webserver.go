@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
-	"strconv"
 )
 
 //Starts a webserver
@@ -43,7 +42,8 @@ func MinersHandler(w http.ResponseWriter, r *http.Request) {
 		//log.Println("Main:", minerStructTemp.Name)
 		//log.Println("Main:", minerStructTemp.Hashrate)
 		fmt.Printf("%v\n", minerStructTemp.Summary.Summary[0].MHSAv)
-		result += minerStructTemp.Name + ": " + strconv.FormatFloat(minerStructTemp.Summary.Summary[0].TotalMH, 'b', -1, 64) + "\n"
+
+		result += minerStructTemp.Name + ": " + fmt.Sprintf("%g", minerStructTemp.Summary.Summary[0].MHSAv) + "\n"
 
 		//log.Println("")
 		//Unlock it
