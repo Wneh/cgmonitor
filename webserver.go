@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
+	"html/template"
 )
 
 //Starts a webserver
@@ -30,32 +31,65 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 
 //Request handler for a creatin summary for all miners
 func MinersHandler(w http.ResponseWriter, r *http.Request) {
+	//Generate the correct structure for the template
+	tempMiners := createMinersTemplate()
 
-	result := ""
+	// fmt.Println("Miners: ",&tempMiners.Rows)
 
-	for _, value := range miners {
-		var minerStructTemp = *value
-
-		minerStructTemp.Mu.Lock()
-		//Read it
-		//log.Println(*minerInfo.Name)
-		//log.Println("Main:", minerStructTemp.Name)
-		//log.Println("Main:", minerStructTemp.Hashrate)
-		fmt.Printf("%v\n", minerStructTemp.Summary.Summary[0].MHSAv)
-
-		result += minerStructTemp.Name + ": " + fmt.Sprintf("%g", minerStructTemp.Summary.Summary[0].MHSAv) + "\n"
-
-		//log.Println("")
-		//Unlock it
-		minerStructTemp.Mu.Unlock()
-
+	for _,value := range tempMiners.Rows {
+		fmt.Printf("%s",value)
 	}
 
-	fmt.Fprintf(w, "%s", result)
+	t, err := template.ParseFiles("miners.html")
+	if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    err = t.Execute(w, tempMiners)
+
+	//fmt.Fprintf(w, "%s", result)
+}
+
+func createMinersTemplate() (MinersTemplate){
+	var rows []*MinerRow
+
+	for _, value := range miners {
+		
+		var minerStructTemp = *value
+
+		//Lock it
+		minerStructTemp.Mu.Lock()
+		//Grab the SummaryObject
+		//I think it will always be only 1 object of them
+		//so just take index 0 in Summary	
+		var summary = &minerStructTemp.Summary.Summary[0]
+
+		//Create a new row and add some infomation
+		var row = MinerRow{minerStructTemp.Name,summary.Accepted,summary.Rejected,summary.BestShare}
+
+		rows = append(rows, &row)
+
+		//Unlock it
+		minerStructTemp.Mu.Unlock()
+	}
+
+	return MinersTemplate{rows}
+	//return nil
 }
 
 //Default handler
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	//respons := ""
 	fmt.Fprintf(w, "Start page!!")
+}
+
+type MinersTemplate struct{
+	Rows []*MinerRow
+}
+
+type MinerRow struct{
+	Name string
+	Accepted int
+	Rejected int
+	BestShare int
 }

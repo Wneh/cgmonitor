@@ -40,7 +40,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 	for {
 		//Get the new information
 		b := []byte(sendCommand(&c.Conn, "{\"command\":\"summary\"}"))
-		//fmt.Printf("%#v", temp)
+		//fmt.Printf("%#v", b)
 
 		/*
 		 * Check for \x00 to remove
@@ -56,6 +56,8 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 			//panic(err)
 			fmt.Println(err.Error())
 		}
+
+		// fmt.Println(s)
 
 		//Lock because we going to write to the minerInfo
 		minerInfo.Mu.Lock()
