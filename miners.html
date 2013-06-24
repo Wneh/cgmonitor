@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  	<head>
+    	<title>Bootstrap 101 Template</title>
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    	<!-- Bootstrap -->
+    	<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    	<link href="css/bootstrap-responsive.min.css" rel="stylesheet" type="text/css">
+ 	</head>
+	<body>
+		<div class="container">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Accepted</th>
+						<th>Rejected</th>
+						<th>MH/s Avarege</th>
+						<th>Best Share</th>
+					</tr>
+				</thead>
+				<tbody>
+ 					{{range .Rows}}<tr>
+					    <td>{{.Name}}</td>
+					    <td>{{.Accepted}}</td>
+						<td>{{.Rejected}}</td>
+						<td>{{.MHSAv}}</td>
+						<td>{{.BestShare}}</td>
+			    	</tr>{{end}}
+				</tbody>
+			</table>
+		</div>
+    	<script src="js/jquery-1.10.1.min.js"></script>
+    	<script src="js/bootstrap.min.js"></script>
+	</body>
+</html>

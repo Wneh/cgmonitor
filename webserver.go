@@ -37,7 +37,7 @@ func MinersHandler(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println("Miners: ",&tempMiners.Rows)
 
 	for _,value := range tempMiners.Rows {
-		fmt.Printf("%s",value)
+		fmt.Printf("%s\n",value)
 	}
 
 	t, err := template.ParseFiles("miners.html")
@@ -51,7 +51,7 @@ func MinersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createMinersTemplate() (MinersTemplate){
-	var rows []*MinerRow
+	var rows []MinerRow
 
 	for _, value := range miners {
 		
@@ -65,16 +65,15 @@ func createMinersTemplate() (MinersTemplate){
 		var summary = &minerStructTemp.Summary.Summary[0]
 
 		//Create a new row and add some infomation
-		var row = MinerRow{minerStructTemp.Name,summary.Accepted,summary.Rejected,summary.BestShare}
+		var row = MinerRow{minerStructTemp.Name,summary.Accepted,summary.Rejected,summary.MHSAv,summary.BestShare}
 
-		rows = append(rows, &row)
+		rows = append(rows, row)
 
 		//Unlock it
 		minerStructTemp.Mu.Unlock()
 	}
 
 	return MinersTemplate{rows}
-	//return nil
 }
 
 //Default handler
@@ -84,12 +83,13 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type MinersTemplate struct{
-	Rows []*MinerRow
+	Rows []MinerRow
 }
 
 type MinerRow struct{
 	Name string
 	Accepted int
 	Rejected int
+	MHSAv float64
 	BestShare int
 }
