@@ -5,10 +5,11 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"html/template"
+	"path/filepath"
 )
 
-//Precache all templates at start
-var templates = template.Must(template.ParseFiles("miners.html"))
+//Precache all templates in folder templates at start
+var templates = template.Must(template.ParseFiles(filepath.Join("templates", "miners.html")))
 
 //Starts the webserver
 func webServerMain() {
