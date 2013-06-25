@@ -7,12 +7,15 @@ import (
 	"html/template"
 )
 
-//Starts a webserver
+//Precache all templates at start
+var templates = template.Must(template.ParseFiles("miners.html"))
+
+//Starts the webserver
 func webServerMain() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", HomeHandler)
-	r.HandleFunc("/miner/{key}", MinerHandler)
+	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}", MinerHandler)
 	r.HandleFunc("/miners", MinersHandler)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./web-root/")))
 	http.Handle("/", r)
@@ -40,12 +43,10 @@ func MinersHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("%s\n",value)
 	}
 
-	t, err := template.ParseFiles("miners.html")
-	if err != nil {
+	err := templates.ExecuteTemplate(w, "miners.html", tempMiners)
+    if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
     }
-    err = t.Execute(w, tempMiners)
 
 	//fmt.Fprintf(w, "%s", result)
 }

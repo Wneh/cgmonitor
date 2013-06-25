@@ -36,6 +36,7 @@
 			<div class="row-fluid">
 	  			<div class="span6 offset3">
 	  				<h1>Summary</h1>
+	  				<p>Click on each name for more information</p>
 					<table class="table">
 						<thead>
 							<tr>
@@ -48,7 +49,7 @@
 						</thead>
 						<tbody>
 		 					{{range .Rows}}<tr>
-							    <td>{{.Name}}</td>
+							    <td><a href="/miner/{{.Name}}" title="More information about {{.Name}}">{{.Name}}</a></td>
 							    <td>{{.Accepted}}</td>
 								<td>{{.Rejected}}</td>
 								<td>{{.MHSAv}}</td>
