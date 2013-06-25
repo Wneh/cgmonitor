@@ -9,7 +9,7 @@ import (
 )
 
 //Precache all templates in folder templates at start
-var templates = template.Must(template.ParseFiles(filepath.Join("templates", "miners.html")))
+var templates = template.Must(template.ParseFiles(filepath.Join("templates", "miners.html"),filepath.Join("templates", "index.html")))
 
 //Starts the webserver
 func webServerMain() {
@@ -74,14 +74,17 @@ func createMinersTemplate() (MinersTemplate){
 		//Unlock it
 		minerStructTemp.Mu.Unlock()
 	}
-
 	return MinersTemplate{rows}
 }
 
 //Default handler
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	//respons := ""
-	fmt.Fprintf(w, "Start page!!")
+	//fmt.Fprintf(w, "Start page!!")
+	err := templates.ExecuteTemplate(w, "index.html","")
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
 }
 
 type MinersTemplate struct{
