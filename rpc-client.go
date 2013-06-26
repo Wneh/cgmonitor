@@ -40,7 +40,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 	for {
 		//Get the new information
 		b := []byte(sendCommand(&c.Conn, "{\"command\":\"summary\"}"))
-		//fmt.Printf("%#v", b)
+		fmt.Printf("%#s", b)
 
 		/*
 		 * Check for \x00 to remove
@@ -127,21 +127,25 @@ func sendCommand(conn *net.Conn, cmd string) string {
  * for converting json responces to
  * structs.
  */
-
-//{"command":"summary"}
-type SummaryResponse struct {
-	//Status  []StatusObject  `json:"STATUS"`
-	Status  []StatusObject  `json:"STATUS"`
-	Summary []SummaryObject `json:"SUMMARY"`
-	Id      int             `json:"id"`
-}
-
+ 
+ ////////////
+ // Status //
+ ////////////
 type StatusObject struct {
 	Status      string `json:"STATUS"`
 	When        int    `json:"When"`
 	Code        int    `json:"Code"`
 	Msg         string `json:"Msg"`
 	Description string `json:"Description"`
+}
+
+/////////////
+// summary //
+/////////////
+type SummaryResponse struct {
+	Status  []StatusObject  `json:"STATUS"`
+	Summary []SummaryObject `json:"SUMMARY"`
+	Id      int             `json:"id"`
 }
 
 type SummaryObject struct {
@@ -165,4 +169,42 @@ type SummaryObject struct {
 	DifficultyRejected float64 `json:"Difficulty Rejected"`
 	DifficultyStale    float64 `json:"Difficulty Stale"`
 	BestShare          int     `json:"Best Share"`
+}
+
+/////////
+// dev //
+/////////
+type DevResponse struct {
+	Status []StatusObject `json:"STATUS"`
+	Devs   []DevObject    `json:"DEVS"`
+	Id     int            `json:"id"`
+}
+
+type DevObject struct {
+	GPU                 int     `json:"GPU"`
+	Enabled             string  `json:"Enabled"`
+	Status              string  `json:"Status"`
+	Temperature         int     `json:"Temperature"`
+	FanSpeed            int     `json:"Fan Speed"`
+	FanPercent          int     `json:"Fan Percent"`
+	GPUClock            int     `json:"GPU Clock"`
+	MemoryClock         int     `json:"Memory Clock"`
+	GPUVoltage          float64 `json:"GPU Voltage"`
+	GPUActivity         int     `json:"GPU Activity"`
+	Powertune           int     `json:"Powertune"`
+	MHSAv               float64 `json:"MHS av"`
+	MHS5s               float64 `json:"MHS 5s"`
+	Accepted            int     `json:"Accepted"`
+	Rejected            int     `json:"Rejected"`
+	HardwareErros       int     `json:"Hardware Errors"`
+	Utility             float64 `json:"Utility"`
+	Intensity           int     `json:"Intensity"`
+	LastSharePool       int     `json:"Last Share Pool"`
+	LastShareTime       int     `json:"Last Share Time"`
+	TotalMH             int     `json:"Total MH"`
+	Diff1Work           int     `json:"Diff1 Work"`
+	DifficultyAccepted  int     `json:"Difficulty Accepted"`
+	DifficultyRejected  int     `json:"Difficulty Rejected"`
+	LastShareDifficulty int     `json:"Last Share Difficulty"`
+	LastValidWork       int     `json:"Last Valid Work"`
 }
