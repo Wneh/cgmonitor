@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/BurntSushi/toml"
 	"log"
 	"sync"
-	//"time"
 )
 
 //Struct representing the config.toml
@@ -30,18 +28,22 @@ type MinerInformation struct {
 var miners map[string]*MinerInformation
 
 func main() {
+	log.Println("Starting server...")
 
 	miners = make(map[string]*MinerInformation)
 
+	log.Println("Begin reading config file...")
 	//Start by reading the config file
 	var config tomlConfig
 	_, err := toml.DecodeFile("config.toml", &config)
 	//Check for errors
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
+	log.Println("...done reading config file")
 
+	log.Println("Begin starting rpc-client threads...")
 	//Start to grab information from every miner
 	for minerName, miner := range config.Miners {
 		log.Printf("Server: %s(%s)\n", minerName, miner.IP)
@@ -55,28 +57,10 @@ func main() {
 
 		//Start one new gorutine for each miner
 		go rpcClient(minerName, miner.IP, 10, &minerStructTemp)
+		log.Printf("    Started %s(%s) thread",minerName,miner.IP)
 	}
+	log.Println("...done starting rpc-client threads")
 
-	fmt.Println("Number of miners:", len(miners))
-
-	// //Loop for ever
-	// for {
-	// 	//Iterate over each miner reponce and print it
-	// 	for _, minerInfo := range miners {
-	// 		var minerStructTemp = *minerInfo
-	// 		//Lock it
-	// 		minerStructTemp.Mu.Lock()
-	// 		//Read it
-	// 		//log.Println(*minerInfo.Name)
-	// 		log.Println("Main:", minerStructTemp.Name)
-	// 		log.Println("Main:", minerStructTemp.Hashrate)
-	// 		//log.Println("")
-	// 		//Unlock it
-	// 		minerStructTemp.Mu.Unlock()
-	// 	}
-	// 	//Sleep for some time
-	// 	time.Sleep(2 * time.Second)
-	// }
-
+	log.Println("Starting web server")
 	webServerMain()
 }

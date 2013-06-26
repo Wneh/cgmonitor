@@ -23,8 +23,6 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 	//Add everything except the connection
 	c := Client{name, ip, nil, refInt, minerInfo}
 
-	fmt.Println(c)
-
 	//Create the connection
 	conn, err := net.Dial("tcp", c.IP)
 
@@ -127,7 +125,7 @@ func sendCommand(conn *net.Conn, cmd string) string {
  * for converting json responces to
  * structs.
  */
- 
+
  ////////////
  // Status //
  ////////////
@@ -171,10 +169,10 @@ type SummaryObject struct {
 	BestShare          int     `json:"Best Share"`
 }
 
-/////////
-// dev //
-/////////
-type DevResponse struct {
+//////////
+// devs //
+//////////
+type DevsResponse struct {
 	Status []StatusObject `json:"STATUS"`
 	Devs   []DevObject    `json:"DEVS"`
 	Id     int            `json:"id"`
