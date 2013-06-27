@@ -37,15 +37,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 	//Continue asking the miner for the hashrate
 	for {
 		//Get the new information
-		b := []byte(sendCommand(&c.Conn, "{\"command\":\"summary\"}"))
-		fmt.Printf("%#s", b)
-
-		/*
-		 * Check for \x00 to remove
-		 */
-		if b[len(b)-1] == '\x00' {
-			b = b[0 : len(b)-1]
-		}
+		b := sendCommand(&c.Conn, "{\"command\":\"summary\"}")
 
 		s := SummaryResponse{}
 		err := json.Unmarshal(b, &s)
@@ -96,11 +88,11 @@ func createConnection(ip string) net.Conn {
 }
 
 // Sends a json rpc command to threw the socket and return the answer
-func sendCommand(conn *net.Conn, cmd string) string {
+func sendCommand(conn *net.Conn, cmd string) []byte {
 	//Write the command to the socket
 	fmt.Fprintf(*conn, cmd)
 	//Read the response
-	status, err := bufio.NewReader(*conn).ReadString('\n')
+	response, err := bufio.NewReader(*conn).ReadString('\n')
 	//Check for any errors
 	if err != nil {
 		//Check for errors
@@ -116,8 +108,18 @@ func sendCommand(conn *net.Conn, cmd string) string {
 			log.Println("Sending command error: ", err)
 		}
 	}
+	//Create the byte array
+	b := []byte(response)
+
+	/*
+	 * Check for \x00 to remove
+	 */
+	if b[len(b)-1] == '\x00' {
+		b = b[0 : len(b)-1]
+	}
+
 	//Return the status we got from the server
-	return status
+	return b
 }
 
 /*
