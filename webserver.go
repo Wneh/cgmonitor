@@ -38,8 +38,6 @@ func MinersHandler(w http.ResponseWriter, r *http.Request) {
 	//Generate the correct structure for the template
 	tempMiners := createMinersTemplate()
 
-	// fmt.Println("Miners: ",&tempMiners.Rows)
-
 	for _,value := range tempMiners.Rows {
 		fmt.Printf("%s\n",value)
 	}
@@ -48,8 +46,6 @@ func MinersHandler(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
     }
-
-	//fmt.Fprintf(w, "%s", result)
 }
 
 func createMinersTemplate() (MinersTemplate){
@@ -79,8 +75,6 @@ func createMinersTemplate() (MinersTemplate){
 
 //Default handler
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	//respons := ""
-	//fmt.Fprintf(w, "Start page!!")
 	err := templates.ExecuteTemplate(w, "index.html","")
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
