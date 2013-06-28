@@ -39,24 +39,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 		//Get the new information
 		b := sendCommand(&c.Conn, "{\"command\":\"summary\"}")
 
-		s := SummaryResponse{}
-		err := json.Unmarshal(b, &s)
-		//Check for errors
-		if err != nil {
-			//panic(err)
-			fmt.Println(err.Error())
-		}
-
-		// fmt.Println(s)
-
-		//Lock because we going to write to the minerInfo
-		minerInfo.Mu.Lock()
-
-		//Save the summary
-		minerInfo.Summary = s
-
-		//Now unlock
-		minerInfo.Mu.Unlock()
+		go processSummaryResponse(b,minerInfo)
 
 		/* 
 		 * Note:
@@ -72,6 +55,27 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 		//Sleep for the a while
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
 	}
+}
+
+func processSummaryResponse(b []byte, minerInfo *MinerInformation){
+	s := SummaryResponse{}
+	err := json.Unmarshal(b, &s)
+	//Check for errors
+	if err != nil {
+		//panic(err)
+		fmt.Println(err.Error())
+	}
+
+	// fmt.Println(s)
+
+	//Lock because we going to write to the minerInfo
+	minerInfo.Mu.Lock()
+
+	//Save the summary
+	minerInfo.Summary = s
+
+	//Now unlock
+	minerInfo.Mu.Unlock()	
 }
 
 // Returns a TCP connection to the ip 
