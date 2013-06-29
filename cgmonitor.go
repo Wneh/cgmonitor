@@ -4,6 +4,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"log"
 	"sync"
+	"time"
 )
 
 //Struct representing the config.toml
@@ -62,5 +63,6 @@ func main() {
 	log.Println("...done starting rpc-client threads")
 
 	log.Println("Starting web server")
+	//time.Sleep(5 * time.Second)
 	webServerMain()
 }

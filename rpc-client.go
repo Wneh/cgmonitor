@@ -23,23 +23,46 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 	//Add everything except the connection
 	c := Client{name, ip, nil, refInt, minerInfo}
 
-	//Create the connection
-	conn, err := net.Dial("tcp", c.IP)
-
-	//Check for errors
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	//Save it to the struct
-	c.Conn = conn
+	//commands := [...]string{"{\"command\":\"summary\"}","{\"command\":\"devs\"}"}
 
 	//Continue asking the miner for the hashrate
 	for {
-		//Get the new information
-		b := sendCommand(&c.Conn, "{\"command\":\"summary\"}")
 
-		go processSummaryResponse(b,minerInfo)
+		rpc := RpcCall{"{\"command\":\"summary\"}", nil, SummaryResponse{}}
+		//Get the new information		
+		//Create the new connection
+		c.Conn = createConnection(c.IP)
+
+		//b := sendCommand(&c.Conn, "{\"command\":\"summary\"}")
+		rpc.Response = sendCommand(&c.Conn, rpc.Request)
+
+		//fmt.Printf("Response: %s\n", b)
+		fmt.Printf("Response: %s\n", rpc.Response)
+
+		//go processSummaryResponse(b, minerInfo)
+		rpc.Parse()
+
+		fmt.Println("TRLOLOL",rpc.ResponseStruct)
+
+		//Lock because we going to write to the minerInfo
+		minerInfo.Mu.Lock()
+
+
+		summary, ok := rpc.ResponseStruct.(SummaryResponse)
+		if ok {
+    		fmt.Printf("Response: %s\n", summary)
+		}
+
+		// switch summary := rpc.ResponseStruct.(type) {
+		// case SummaryResponse:
+		//     //Save the summary
+		// 	minerInfo.Summary = summary
+		// //default:
+		//     // t is some other type that we didn't name.
+		// }
+
+		//Now unlock
+		minerInfo.Mu.Unlock()
 
 		/* 
 		 * Note:
@@ -48,16 +71,13 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 		 * after each call so we need to reset it for
 		 * the next rpc-call
 		 */
-		conn.Close()
-		//Create the new connection
-		c.Conn = createConnection(c.IP)
-
+		c.Conn.Close()
 		//Sleep for the a while
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
 	}
 }
 
-func processSummaryResponse(b []byte, minerInfo *MinerInformation){
+func processSummaryResponse(b []byte, minerInfo *MinerInformation) {
 	s := SummaryResponse{}
 	err := json.Unmarshal(b, &s)
 	//Check for errors
@@ -66,7 +86,7 @@ func processSummaryResponse(b []byte, minerInfo *MinerInformation){
 		fmt.Println(err.Error())
 	}
 
-	// fmt.Println(s)
+	fmt.Println(s)
 
 	//Lock because we going to write to the minerInfo
 	minerInfo.Mu.Lock()
@@ -75,7 +95,7 @@ func processSummaryResponse(b []byte, minerInfo *MinerInformation){
 	minerInfo.Summary = s
 
 	//Now unlock
-	minerInfo.Mu.Unlock()	
+	minerInfo.Mu.Unlock()
 }
 
 // Returns a TCP connection to the ip 
@@ -126,15 +146,35 @@ func sendCommand(conn *net.Conn, cmd string) []byte {
 	return b
 }
 
+type RpcCall struct {
+	Request        string
+	Response       []byte
+	ResponseStruct interface{}
+}
+
+func (r *RpcCall) Parse() {
+
+	fmt.Printf("Parse Response: %s\n", r.Response)
+	fmt.Printf("Parse ResonseStruct %s\n", r.ResponseStruct)
+
+	err := json.Unmarshal(r.Response, &r.ResponseStruct)
+	//Check for errors
+	if err != nil {
+		//panic(err)
+		fmt.Println("GOING DOWN: ",err.Error())
+	}
+	fmt.Printf("Parse ResonseStruct %s\n", r.ResponseStruct)	
+}
+
 /*
  * Bellow here is only structs defined
  * for converting json responces to
  * structs.
  */
 
- ////////////
- // Status //
- ////////////
+////////////
+// Status //
+////////////
 type StatusObject struct {
 	Status      string `json:"STATUS"`
 	When        int    `json:"When"`
