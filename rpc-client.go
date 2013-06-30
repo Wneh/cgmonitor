@@ -7,7 +7,7 @@ import (
 	"io"
 	"log"
 	"net"
-	"time"
+	// "time"
 )
 
 type Client struct {
@@ -23,35 +23,49 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 	//Add everything except the connection
 	c := Client{name, ip, nil, refInt, minerInfo}
 
+	clientRequests := make(chan RpcRequest)
+
 	//commands := [...]string{"{\"command\":\"summary\"}","{\"command\":\"devs\"}"}
 
 	//Continue asking the miner for the hashrate
-	for {
+	for r := range clientRequests{
 
-		rpc := RpcCall{"{\"command\":\"summary\"}", nil, SummaryResponse{}}
+		//rpc := RpcCall{"{\"command\":\"summary\"}", nil, SummaryResponse{}}
 		//Get the new information		
-		//Create the new connection
+		//Create a new connection
 		c.Conn = createConnection(c.IP)
 
-		//b := sendCommand(&c.Conn, "{\"command\":\"summary\"}")
-		rpc.Response = sendCommand(&c.Conn, rpc.Request)
+		//Send the request to the cgminer
+		b := sendCommand(&c.Conn, r.Request)
+		/* 
+		 * Note:
+		 *
+		 * It seems that cgminer close the tcp connection
+		 * after each call so we need to reset it for
+		 * the next rpc-call
+		 */
+		c.Conn.Close()
+		//And send back the result
+		r.ResultChan <- b
+
+
+		//rpc.Response = sendCommand(&c.Conn, rpc.Request)
 
 		//fmt.Printf("Response: %s\n", b)
-		fmt.Printf("Response: %s\n", rpc.Response)
+		//fmt.Printf("Response: %s\n", rpc.Response)
 
 		//go processSummaryResponse(b, minerInfo)
-		rpc.Parse()
+		//rpc.Parse()
 
-		fmt.Println("TRLOLOL",rpc.ResponseStruct)
+		//fmt.Println("TRLOLOL", rpc.ResponseStruct)
 
 		//Lock because we going to write to the minerInfo
-		minerInfo.Mu.Lock()
+		//minerInfo.Mu.Lock()
 
-
-		summary, ok := rpc.ResponseStruct.(SummaryResponse)
-		if ok {
-    		fmt.Printf("Response: %s\n", summary)
-		}
+		//summary, ok := rpc.ResponseStruct.(SummaryResponse)
+		//if ok {
+		//	fmt.Printf("Response: %s\n", summary)
+		//}
 
 		// switch summary := rpc.ResponseStruct.(type) {
 		// case SummaryResponse:
@@ -62,19 +76,17 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 		// }
 
 		//Now unlock
-		minerInfo.Mu.Unlock()
+		//minerInfo.Mu.Unlock()
 
-		/* 
-		 * Note:
-		 *
-		 * It seems that cgminer close the tcp connection
-		 * after each call so we need to reset it for
-		 * the next rpc-call
-		 */
-		c.Conn.Close()
+		
+		//c.Conn.Close()
 		//Sleep for the a while
-		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
+		//time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
 	}
+}
+
+func SummaryHandler(res chan<- RpcRequest){
+
 }
 
 func processSummaryResponse(b []byte, minerInfo *MinerInformation) {
@@ -146,25 +158,24 @@ func sendCommand(conn *net.Conn, cmd string) []byte {
 	return b
 }
 
-type RpcCall struct {
-	Request        string
-	Response       []byte
-	ResponseStruct interface{}
+type RpcRequest struct {
+	Request    string
+	ResultChan chan []byte
 }
 
-func (r *RpcCall) Parse() {
+// func (r *RpcRequest) Parse() {
 
-	fmt.Printf("Parse Response: %s\n", r.Response)
-	fmt.Printf("Parse ResonseStruct %s\n", r.ResponseStruct)
+// 	fmt.Printf("Parse Response: %s\n", r.Response)
+// 	fmt.Printf("Parse ResonseStruct %s\n", r.ResponseStruct)
 
-	err := json.Unmarshal(r.Response, &r.ResponseStruct)
-	//Check for errors
-	if err != nil {
-		//panic(err)
-		fmt.Println("GOING DOWN: ",err.Error())
-	}
-	fmt.Printf("Parse ResonseStruct %s\n", r.ResponseStruct)	
-}
+// 	err := json.Unmarshal(r.Response, &r.ResponseStruct)
+// 	//Check for errors
+// 	if err != nil {
+// 		//panic(err)
+// 		fmt.Println("GOING DOWN: ", err.Error())
+// 	}
+// 	fmt.Printf("Parse ResonseStruct %s\n", r.ResponseStruct)
+// }
 
 /*
  * Bellow here is only structs defined

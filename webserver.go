@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
-	"net/http"
 	"html/template"
+	"net/http"
 	"path/filepath"
 )
 
 //Precache all templates in folder templates at start
-var templates = template.Must(template.ParseFiles(filepath.Join("templates", "miners.html"),filepath.Join("templates", "index.html")))
+var templates = template.Must(template.ParseFiles(filepath.Join("templates", "miners.html"), filepath.Join("templates", "index.html")))
 
 //Starts the webserver
 func webServerMain() {
@@ -38,21 +38,21 @@ func MinersHandler(w http.ResponseWriter, r *http.Request) {
 	//Generate the correct structure for the template
 	tempMiners := createMinersTemplate()
 
-	for _,value := range tempMiners.Rows {
-		fmt.Printf("%s\n",value)
+	for _, value := range tempMiners.Rows {
+		fmt.Printf("%s\n", value)
 	}
 
 	err := templates.ExecuteTemplate(w, "miners.html", tempMiners)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-    }
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-func createMinersTemplate() (MinersTemplate){
+func createMinersTemplate() MinersTemplate {
 	var rows []MinerRow
 
 	for _, value := range miners {
-		
+
 		var minerStructTemp = *value
 
 		//Lock it
@@ -63,7 +63,7 @@ func createMinersTemplate() (MinersTemplate){
 		var summary = &minerStructTemp.Summary.Summary[0]
 
 		//Create a new row and add some infomation
-		var row = MinerRow{minerStructTemp.Name,summary.Accepted,summary.Rejected,summary.MHSAv,summary.BestShare}
+		var row = MinerRow{minerStructTemp.Name, summary.Accepted, summary.Rejected, summary.MHSAv, summary.BestShare}
 
 		rows = append(rows, row)
 
@@ -75,20 +75,20 @@ func createMinersTemplate() (MinersTemplate){
 
 //Default handler
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "index.html","")
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-    }
+	err := templates.ExecuteTemplate(w, "index.html", "")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-type MinersTemplate struct{
+type MinersTemplate struct {
 	Rows []MinerRow
 }
 
-type MinerRow struct{
-	Name string
-	Accepted int
-	Rejected int
-	MHSAv float64
+type MinerRow struct {
+	Name      string
+	Accepted  int
+	Rejected  int
+	MHSAv     float64
 	BestShare int
 }

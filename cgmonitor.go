@@ -4,7 +4,6 @@ import (
 	"github.com/BurntSushi/toml"
 	"log"
 	"sync"
-	"time"
 )
 
 //Struct representing the config.toml
@@ -58,7 +57,7 @@ func main() {
 
 		//Start one new gorutine for each miner
 		go rpcClient(minerName, miner.IP, 10, &minerStructTemp)
-		log.Printf("    Started %s(%s) thread",minerName,miner.IP)
+		log.Printf("    Started %s(%s) thread", minerName, miner.IP)
 	}
 	log.Println("...done starting rpc-client threads")
 
