@@ -7,7 +7,7 @@ import (
 	"io"
 	"log"
 	"net"
-	// "time"
+	"time"
 )
 
 type Client struct {
@@ -27,8 +27,10 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 
 	//commands := [...]string{"{\"command\":\"summary\"}","{\"command\":\"devs\"}"}
 
+	go SummaryHandler(clientRequests, minerInfo, &c)
+
 	//Continue asking the miner for the hashrate
-	for r := range clientRequests{
+	for r := range clientRequests {
 
 		//rpc := RpcCall{"{\"command\":\"summary\"}", nil, SummaryResponse{}}
 		//Get the new information		
@@ -47,46 +49,70 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 		c.Conn.Close()
 		//And send back the result
 		r.ResultChan <- b
-
-
-		//rpc.Response = sendCommand(&c.Conn, rpc.Request)
-
-		//fmt.Printf("Response: %s\n", b)
-		//fmt.Printf("Response: %s\n", rpc.Response)
-
-		//go processSummaryResponse(b, minerInfo)
-		//rpc.Parse()
-
-		//fmt.Println("TRLOLOL", rpc.ResponseStruct)
-
-		//Lock because we going to write to the minerInfo
-		//minerInfo.Mu.Lock()
-
-		//summary, ok := rpc.ResponseStruct.(SummaryResponse)
-		//if ok {
-		//	fmt.Printf("Response: %s\n", summary)
-		//}
-
-		// switch summary := rpc.ResponseStruct.(type) {
-		// case SummaryResponse:
-		//     //Save the summary
-		// 	minerInfo.Summary = summary
-		// //default:
-		//     // t is some other type that we didn't name.
-		// }
-
-		//Now unlock
-		//minerInfo.Mu.Unlock()
-
-		
-		//c.Conn.Close()
-		//Sleep for the a while
-		//time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
 	}
+
+	//rpc.Response = sendCommand(&c.Conn, rpc.Request)
+
+	//fmt.Printf("Response: %s\n", b)
+	//fmt.Printf("Response: %s\n", rpc.Response)
+
+	//go processSummaryResponse(b, minerInfo)
+	//rpc.Parse()
+
+	//fmt.Println("TRLOLOL", rpc.ResponseStruct)
+
+	//Lock because we going to write to the minerInfo
+	//minerInfo.Mu.Lock()
+
+	//summary, ok := rpc.ResponseStruct.(SummaryResponse)
+	//if ok {
+	//	fmt.Printf("Response: %s\n", summary)
+	//}
+
+	// switch summary := rpc.ResponseStruct.(type) {
+	// case SummaryResponse:
+	//     //Save the summary
+	// 	minerInfo.Summary = summary
+	// //default:
+	//     // t is some other type that we didn't name.
+	// }
+
+	//Now unlock
+	//minerInfo.Mu.Unlock()
+
+	//c.Conn.Close()
+	//Sleep for the a while
+	//time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
+
 }
 
-func SummaryHandler(res chan<- RpcRequest){
+func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client) {
+	request := RpcRequest{"{\"command\":\"summary\"}", make(chan []byte)}
 
+	var response []byte
+	var summary SummaryResponse
+
+	for {
+		res <- request
+		response = <-request.ResultChan
+
+		fmt.Printf("Response: %s\n", response)
+		err := json.Unmarshal(response, &summary)
+		//Check for errors
+		if err != nil {
+			//panic(err)
+			fmt.Println(err.Error())
+		}
+		//Lock it
+		minerInfo.Mu.Lock()
+		//Save the summary
+		minerInfo.Summary = summary
+		//Now unlock
+		minerInfo.Mu.Unlock()
+
+		//Now sleep
+		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
+	}
 }
 
 func processSummaryResponse(b []byte, minerInfo *MinerInformation) {
