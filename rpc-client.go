@@ -25,10 +25,13 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 
 	clientRequests := make(chan RpcRequest)
 
+	//Start the thread the will keep doing summary requests
 	go SummaryHandler(clientRequests, minerInfo, &c)
+	//Start another thread the will ask the devs requests
+	go DevsHandler(clientRequests, minerInfo, &c)
 
 	//Wait for new requst to make from the clienReequest channel
-	for r := range clientRequests {	
+	for r := range clientRequests {
 		//Create a new connection
 		c.Conn = createConnection(c.IP)
 
@@ -47,6 +50,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 	}
 }
 
+//Making summary requests to the cgminer and parse the result.
 func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client) {
 	request := RpcRequest{"{\"command\":\"summary\"}", make(chan []byte)}
 
@@ -61,13 +65,41 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 		err := json.Unmarshal(response, &summary)
 		//Check for errors
 		if err != nil {
-			//panic(err)
 			fmt.Println(err.Error())
 		}
 		//Lock it
 		minerInfo.Mu.Lock()
 		//Save the summary
 		minerInfo.Summary = summary
+		//Now unlock
+		minerInfo.Mu.Unlock()
+
+		//Now sleep
+		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
+	}
+}
+
+//Making devs request to the cgminer and parse the result
+func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client) {
+	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte)}
+
+	var response []byte
+	var devs DevsResponse
+
+	for {
+		res <- request
+		response = <-request.ResultChan
+
+		fmt.Printf("Response: %s\n", response)
+		err := json.Unmarshal(response, &devs)
+		//Check for errors
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		//Lock it
+		minerInfo.Mu.Lock()
+		//Save the summary
+		//minerInfo.Summary = summary
 		//Now unlock
 		minerInfo.Mu.Unlock()
 
@@ -191,7 +223,7 @@ type DevObject struct {
 	GPU                 int     `json:"GPU"`
 	Enabled             string  `json:"Enabled"`
 	Status              string  `json:"Status"`
-	Temperature         int     `json:"Temperature"`
+	Temperature         float64 `json:"Temperature"`
 	FanSpeed            int     `json:"Fan Speed"`
 	FanPercent          int     `json:"Fan Percent"`
 	GPUClock            int     `json:"GPU Clock"`
@@ -205,13 +237,13 @@ type DevObject struct {
 	Rejected            int     `json:"Rejected"`
 	HardwareErros       int     `json:"Hardware Errors"`
 	Utility             float64 `json:"Utility"`
-	Intensity           int     `json:"Intensity"`
+	Intensity           string  `json:"Intensity"`
 	LastSharePool       int     `json:"Last Share Pool"`
 	LastShareTime       int     `json:"Last Share Time"`
-	TotalMH             int     `json:"Total MH"`
+	TotalMH             float64 `json:"Total MH"`
 	Diff1Work           int     `json:"Diff1 Work"`
-	DifficultyAccepted  int     `json:"Difficulty Accepted"`
-	DifficultyRejected  int     `json:"Difficulty Rejected"`
-	LastShareDifficulty int     `json:"Last Share Difficulty"`
+	DifficultyAccepted  float64 `json:"Difficulty Accepted"`
+	DifficultyRejected  float64 `json:"Difficulty Rejected"`
+	LastShareDifficulty float64 `json:"Last Share Difficulty"`
 	LastValidWork       int     `json:"Last Valid Work"`
 }
