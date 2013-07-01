@@ -21,6 +21,7 @@ type MinerInformation struct {
 	Name    string          //The miners name
 	Version string          //Version responce
 	Summary SummaryResponse //Summary
+	Devs 	DevsResponse	//Devs
 }
 
 //Global variabels

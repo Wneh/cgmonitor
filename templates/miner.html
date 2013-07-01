@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  	<head>
+    	<title>CGMonitor - Miners</title>
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    	<!-- Bootstrap -->
+    	<link href="./../css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    	<style type="text/css">
+    		body {
+        		padding-top: 60px;
+    		}
+		</style>
+    	<link href="./../css/bootstrap-responsive.min.css" rel="stylesheet" type="text/css">
+ 	</head>
+	<body>
+		<div class="container">
+			<!-- Top nav bar-->
+		 	<div class="navbar navbar-inverse navbar-fixed-top">
+		    	<div class="navbar-inner">
+		        	<div class="container">
+		          		<button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+		            		<span class="icon-bar"></span>
+		            		<span class="icon-bar"></span>
+		            		<span class="icon-bar"></span>
+		          		</button>
+		          		<a class="brand" href="#">CGMonitor</a>
+		          		<div class="nav-collapse collapse">
+		          			<ul class="nav">
+		              			<li><a href="/">Home</a></li>
+		              			<li class="active"><a href="/miners">Miners</a></li>
+		            		</ul>
+		          		</div><!--/.nav-collapse -->
+		        	</div>
+		      	</div>
+		    </div>
+			<div class="row-fluid">
+  				<h1>Detailed info</h1>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Enabled</th>
+							<th>Status</th>
+							<th>Temp.</th>
+							<th>Fan Speed</th>
+							<th>Fan Percent</th>
+							<th>GPU Clock</th>
+							<th>Memory Clock</th>
+							<th>GPU Voltage</th>
+							<th>GPU Activity</th>
+							<th>Powertune</th>
+							<th>MH/s Average</th>
+							<th>MH/s 5s</th>
+							<th>Accepted</th>
+							<th>Rejected</th>
+							<th>Hardware Errors</th>
+							<th>Utility</th>
+							<th>Intensity</th>
+						</tr>
+					</thead>
+					<tbody>
+	 					{{range .Devs}}<tr>
+						    <td>{{.GPU}}</td>
+						    <td>{{.Enabled}}</td>
+						    <td>{{.Status}}
+							<td>{{.Temperature}}</td>
+							<td>{{.FanSpeed}}</td>
+							<td>{{.FanPercent}}</td>
+							<td>{{.GPUClock}}</td>
+							<td>{{.MemoryClock}}</td>
+							<td>{{.GPUVoltage}}</td>
+							<td>{{.GPUActivity}}</td>
+							<td>{{.Powertune}}</td>
+							<td>{{.MHSAv}}</td>
+							<td>{{.MHS5s}}</td>
+							<td>{{.Accepted}}</td>
+							<td>{{.Rejected}}</td>
+							<td>{{.HardwareErrors}}</td>
+							<td>{{.Utility}}</td>
+							<td>{{.Intensity}}</td>
+				    	</tr>{{end}}
+					</tbody>
+				</table>
+			</div>
+		</div>
+    	<script src="./js/jquery-1.10.1.min.js"></script>
+    	<script src="./js/bootstrap.min.js"></script>
+	</body>
+</html>

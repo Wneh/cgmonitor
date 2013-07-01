@@ -9,7 +9,9 @@ import (
 )
 
 //Precache all templates in folder templates at start
-var templates = template.Must(template.ParseFiles(filepath.Join("templates", "miners.html"), filepath.Join("templates", "index.html")))
+var templates = template.Must(template.ParseFiles(filepath.Join("templates", "miners.html"), 
+												  filepath.Join("templates", "index.html"),
+												  filepath.Join("templates", "miner.html")))
 
 //Starts the webserver
 func webServerMain() {
@@ -30,7 +32,17 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(key)
 
-	fmt.Fprintf(w, "The miner your looking for is: %s", key)
+	//Get the array that hold the information about the devs
+	miners[key].Mu.Lock()
+	tempDevs := miners[key].Devs
+	miners[key].Mu.Unlock()
+
+	err := templates.ExecuteTemplate(w, "miner.html", tempDevs)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	// fmt.Fprintf(w, "The miner your looking for is: %s", key)
 }
 
 //Request handler for a creatin summary for all miners
@@ -38,9 +50,9 @@ func MinersHandler(w http.ResponseWriter, r *http.Request) {
 	//Generate the correct structure for the template
 	tempMiners := createMinersTemplate()
 
-	for _, value := range tempMiners.Rows {
-		fmt.Printf("%s\n", value)
-	}
+	// for _, value := range tempMiners.Rows {
+	// 	fmt.Printf("%s\n", value)
+	// }
 
 	err := templates.ExecuteTemplate(w, "miners.html", tempMiners)
 	if err != nil {

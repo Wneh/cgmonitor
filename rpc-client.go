@@ -235,7 +235,7 @@ type DevObject struct {
 	MHS5s               float64 `json:"MHS 5s"`
 	Accepted            int     `json:"Accepted"`
 	Rejected            int     `json:"Rejected"`
-	HardwareErros       int     `json:"Hardware Errors"`
+	HardwareErrors       int     `json:"Hardware Errors"`
 	Utility             float64 `json:"Utility"`
 	Intensity           string  `json:"Intensity"`
 	LastSharePool       int     `json:"Last Share Pool"`
