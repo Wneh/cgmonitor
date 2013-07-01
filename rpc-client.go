@@ -25,15 +25,10 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 
 	clientRequests := make(chan RpcRequest)
 
-	//commands := [...]string{"{\"command\":\"summary\"}","{\"command\":\"devs\"}"}
-
 	go SummaryHandler(clientRequests, minerInfo, &c)
 
-	//Continue asking the miner for the hashrate
-	for r := range clientRequests {
-
-		//rpc := RpcCall{"{\"command\":\"summary\"}", nil, SummaryResponse{}}
-		//Get the new information		
+	//Wait for new requst to make from the clienReequest channel
+	for r := range clientRequests {	
 		//Create a new connection
 		c.Conn = createConnection(c.IP)
 
@@ -50,40 +45,6 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 		//And send back the result
 		r.ResultChan <- b
 	}
-
-	//rpc.Response = sendCommand(&c.Conn, rpc.Request)
-
-	//fmt.Printf("Response: %s\n", b)
-	//fmt.Printf("Response: %s\n", rpc.Response)
-
-	//go processSummaryResponse(b, minerInfo)
-	//rpc.Parse()
-
-	//fmt.Println("TRLOLOL", rpc.ResponseStruct)
-
-	//Lock because we going to write to the minerInfo
-	//minerInfo.Mu.Lock()
-
-	//summary, ok := rpc.ResponseStruct.(SummaryResponse)
-	//if ok {
-	//	fmt.Printf("Response: %s\n", summary)
-	//}
-
-	// switch summary := rpc.ResponseStruct.(type) {
-	// case SummaryResponse:
-	//     //Save the summary
-	// 	minerInfo.Summary = summary
-	// //default:
-	//     // t is some other type that we didn't name.
-	// }
-
-	//Now unlock
-	//minerInfo.Mu.Unlock()
-
-	//c.Conn.Close()
-	//Sleep for the a while
-	//time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
-
 }
 
 func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client) {
@@ -113,27 +74,6 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 		//Now sleep
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
 	}
-}
-
-func processSummaryResponse(b []byte, minerInfo *MinerInformation) {
-	s := SummaryResponse{}
-	err := json.Unmarshal(b, &s)
-	//Check for errors
-	if err != nil {
-		//panic(err)
-		fmt.Println(err.Error())
-	}
-
-	fmt.Println(s)
-
-	//Lock because we going to write to the minerInfo
-	minerInfo.Mu.Lock()
-
-	//Save the summary
-	minerInfo.Summary = s
-
-	//Now unlock
-	minerInfo.Mu.Unlock()
 }
 
 // Returns a TCP connection to the ip 
@@ -188,20 +128,6 @@ type RpcRequest struct {
 	Request    string
 	ResultChan chan []byte
 }
-
-// func (r *RpcRequest) Parse() {
-
-// 	fmt.Printf("Parse Response: %s\n", r.Response)
-// 	fmt.Printf("Parse ResonseStruct %s\n", r.ResponseStruct)
-
-// 	err := json.Unmarshal(r.Response, &r.ResponseStruct)
-// 	//Check for errors
-// 	if err != nil {
-// 		//panic(err)
-// 		fmt.Println("GOING DOWN: ", err.Error())
-// 	}
-// 	fmt.Printf("Parse ResonseStruct %s\n", r.ResponseStruct)
-// }
 
 /*
  * Bellow here is only structs defined

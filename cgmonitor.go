@@ -52,7 +52,6 @@ func main() {
 		minerStructTemp.Name = minerName
 
 		//Add save it
-		//miners = append(miners, &minerStructTemp)
 		miners[minerName] = &minerStructTemp
 
 		//Start one new gorutine for each miner
