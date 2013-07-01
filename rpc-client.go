@@ -99,7 +99,7 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client) 
 		//Lock it
 		minerInfo.Mu.Lock()
 		//Save the summary
-		//minerInfo.Summary = summary
+		minerInfo.Devs = devs
 		//Now unlock
 		minerInfo.Mu.Unlock()
 
