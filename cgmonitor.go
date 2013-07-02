@@ -17,11 +17,20 @@ type miner struct {
 }
 
 type MinerInformation struct {
-	Mu      sync.Mutex      //So we dont read and write to it at the same time.
 	Name    string          //The miners name
 	Version string          //Version responce
-	Summary SummaryResponse //Summary
-	Devs 	DevsResponse	//Devs
+	SumWrap SummaryWrapper //Summary
+	DevsWrap 	DevsWrapper	//Devs
+}
+
+type SummaryWrapper struct {
+	Mu sync.RWMutex
+	Summary SummaryResponse
+}
+
+type DevsWrapper struct {
+	Mu sync.RWMutex
+	Devs DevsResponse
 }
 
 //Global variabels

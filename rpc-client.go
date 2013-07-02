@@ -68,11 +68,11 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 			fmt.Println(err.Error())
 		}
 		//Lock it
-		minerInfo.Mu.Lock()
+		minerInfo.SumWrap.Mu.Lock()
 		//Save the summary
-		minerInfo.Summary = summary
+		minerInfo.SumWrap.Summary = summary
 		//Now unlock
-		minerInfo.Mu.Unlock()
+		minerInfo.SumWrap.Mu.Unlock()
 
 		//Now sleep
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
@@ -97,11 +97,11 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client) 
 			fmt.Println(err.Error())
 		}
 		//Lock it
-		minerInfo.Mu.Lock()
+		minerInfo.DevsWrap.Mu.Lock()
 		//Save the summary
-		minerInfo.Devs = devs
+		minerInfo.DevsWrap.Devs = devs
 		//Now unlock
-		minerInfo.Mu.Unlock()
+		minerInfo.DevsWrap.Mu.Unlock()
 
 		//Now sleep
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)

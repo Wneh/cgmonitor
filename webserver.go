@@ -33,9 +33,9 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(key)
 
 	//Get the array that hold the information about the devs
-	miners[key].Mu.Lock()
-	tempDevs := miners[key].Devs
-	miners[key].Mu.Unlock()
+	miners[key].DevsWrap.Mu.RLock()
+	tempDevs := miners[key].DevsWrap.Devs
+	miners[key].DevsWrap.Mu.RUnlock()
 
 	err := templates.ExecuteTemplate(w, "miner.html", tempDevs)
 	if err != nil {
@@ -68,11 +68,11 @@ func createMinersTemplate() MinersTemplate {
 		var minerStructTemp = *value
 
 		//Lock it
-		minerStructTemp.Mu.Lock()
+		minerStructTemp.SumWrap.Mu.RLock()
 		//Grab the SummaryObject
 		//I think it will always be only 1 object of them
 		//so just take index 0 in Summary	
-		var summary = &minerStructTemp.Summary.Summary[0]
+		var summary = &minerStructTemp.SumWrap.Summary.Summary[0]
 
 		//Create a new row and add some infomation
 		var row = MinerRow{minerStructTemp.Name, summary.Accepted, summary.Rejected, summary.MHSAv, summary.BestShare}
@@ -80,7 +80,7 @@ func createMinersTemplate() MinersTemplate {
 		rows = append(rows, row)
 
 		//Unlock it
-		minerStructTemp.Mu.Unlock()
+		minerStructTemp.SumWrap.Mu.RUnlock()
 	}
 	return MinersTemplate{rows}
 }
