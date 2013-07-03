@@ -41,14 +41,6 @@
 							<th>Name</th>
 							<th>Enabled</th>
 							<th>Status</th>
-							<th>Temp.</th>
-							<th>Fan Speed</th>
-							<th>Fan Percent</th>
-							<th>GPU Clock</th>
-							<th>Memory Clock</th>
-							<th>GPU Voltage</th>
-							<th>GPU Activity</th>
-							<th>Powertune</th>
 							<th>MH/s Average</th>
 							<th>MH/s 5s</th>
 							<th>Accepted</th>
@@ -63,14 +55,6 @@
 						    <td>{{.GPU}}</td>
 						    <td>{{.Enabled}}</td>
 						    <td>{{.Status}}
-							<td>{{.Temperature}}</td>
-							<td>{{.FanSpeed}}</td>
-							<td>{{.FanPercent}}</td>
-							<td>{{.GPUClock}}</td>
-							<td>{{.MemoryClock}}</td>
-							<td>{{.GPUVoltage}}</td>
-							<td>{{.GPUActivity}}</td>
-							<td>{{.Powertune}}</td>
 							<td>{{.MHSAv}}</td>
 							<td>{{.MHS5s}}</td>
 							<td>{{.Accepted}}</td>
@@ -78,6 +62,37 @@
 							<td>{{.HardwareErrors}}</td>
 							<td>{{.Utility}}</td>
 							<td>{{.Intensity}}</td>
+				    	</tr>{{end}}
+					</tbody>
+				</table>
+				<h1>GPU Information</h1>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>GPU Clock</th>
+							<th>Memory Clock</th>
+							<th>GPU Voltage</th>
+							<th>GPU Activity</th>
+							<th>Powertune</th>
+							<th>Intensity</th>
+							<th>Temperature</th>
+							<th>Fan Speed</th>
+							<th>Fan Percent</th>
+						</tr>
+					</thead>
+					<tbody>
+	 					{{range .Devs}}<tr>
+						    <td>{{.GPU}}</td>
+							<td>{{.GPUClock}}</td>
+							<td>{{.MemoryClock}}</td>
+							<td>{{.GPUVoltage}}</td>
+							<td>{{.GPUActivity}}</td>
+							<td>{{.Powertune}}</td>
+							<td>{{.Intensity}}</td>
+							<td>{{.Temperature}}C</td>
+							<td>{{.FanSpeed}}RPM</td>
+							<td>{{.FanPercent}}%</td>
 				    	</tr>{{end}}
 					</tbody>
 				</table>
