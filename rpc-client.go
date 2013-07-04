@@ -28,25 +28,33 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 	//Start the thread the will keep doing summary requests
 	go SummaryHandler(clientRequests, minerInfo, &c)
 	//Start another thread the will ask the devs requests
-	go DevsHandler(clientRequests, minerInfo, &c)
+	//go DevsHandler(clientRequests, minerInfo, &c)
+
+	//fmt.Printf("Empty byte array%v\n",make([]byte,0))
 
 	//Wait for new requst to make from the clienReequest channel
 	for r := range clientRequests {
 		//Create a new connection
 		c.Conn = createConnection(c.IP)
 
-		//Send the request to the cgminer
-		b := sendCommand(&c.Conn, r.Request)
-		/* 
-		 * Note:
-		 *
-		 * It seems that cgminer close the tcp connection
-		 * after each call so we need to reset it for
-		 * the next rpc-call
-		 */
-		c.Conn.Close()
-		//And send back the result
-		r.ResultChan <- b
+		//If c.Conn is still nil then we couldn't connect
+		//So send back an empty slice of bytes
+		if c.Conn == nil {
+			r.ResultChan <- make([]byte,0)
+		} else {
+			//Send the request to the cgminer
+			b := sendCommand(&c.Conn, r.Request)
+			/* 
+			 * Note:
+			 *
+			 * It seems that cgminer close the tcp connection
+			 * after each call so we need to reset it for
+			 * the next rpc-call
+			 */
+			c.Conn.Close()
+			//And send back the result
+			r.ResultChan <- b	
+		}	
 	}
 }
 
@@ -55,17 +63,25 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 	request := RpcRequest{"{\"command\":\"summary\"}", make(chan []byte)}
 
 	var response []byte
-	var summary SummaryResponse
+	summary := SummaryResponse{}
+	summary.Summary = append(summary.Summary, SummaryObject{})
+	summary.Status = append(summary.Status, StatusObject{})
+
+	fmt.Printf("%v\n", summary)
 
 	for {
 		res <- request
 		response = <-request.ResultChan
 
-		fmt.Printf("Response: %s\n", response)
-		err := json.Unmarshal(response, &summary)
-		//Check for errors
-		if err != nil {
-			fmt.Println(err.Error())
+		//fmt.Printf("Response: %s\n", response)
+
+		if len(response) != 0 {
+			fmt.Printf("Response: %s\n", response)
+			err := json.Unmarshal(response, &summary)
+			//Check for errors
+			if err != nil {
+				fmt.Println(err.Error())
+			}	
 		}
 		//Lock it
 		minerInfo.SumWrap.Mu.Lock()
@@ -114,10 +130,9 @@ func createConnection(ip string) net.Conn {
 
 	//Check for errors
 	if err != nil {
-		log.Println(err)
+		log.Printf("createConnection: %s, check if the ip is correct or cgminer's api is enabled",err)
 		return nil
 	}
-
 	return conn
 }
 
@@ -235,7 +250,7 @@ type DevObject struct {
 	MHS5s               float64 `json:"MHS 5s"`
 	Accepted            int     `json:"Accepted"`
 	Rejected            int     `json:"Rejected"`
-	HardwareErrors       int     `json:"Hardware Errors"`
+	HardwareErrors      int     `json:"Hardware Errors"`
 	Utility             float64 `json:"Utility"`
 	Intensity           string  `json:"Intensity"`
 	LastSharePool       int     `json:"Last Share Pool"`
