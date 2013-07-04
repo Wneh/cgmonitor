@@ -35,11 +35,13 @@ type DevsWrapper struct {
 }
 
 //Global variabels
-//var miners []*MinerInformation
 var miners map[string]*MinerInformation
 
 func main() {
 	log.Println("Starting server...")
+
+	//Create a waitgroup
+	wg := new(sync.WaitGroup)
 
 	miners = make(map[string]*MinerInformation)
 
@@ -54,10 +56,15 @@ func main() {
 	}
 	log.Println("...done reading config file")
 
+	//wg.Add(len(config.Miners*2))
+
 	log.Println("Begin starting rpc-client threads...")
 	//Start to grab information from every miner
 	for minerName, miner := range config.Miners {
-		log.Printf("Server: %s(%s)\n", minerName, miner.IP)
+		//Add one to the WaitGroup for each miner
+		wg.Add(2)
+
+		log.Printf("Starting: %s(%s)\n", minerName, miner.IP)
 		//Create a new miner struct and add the name
 		minerStructTemp := MinerInformation{}
 		minerStructTemp.Name = minerName
@@ -66,12 +73,12 @@ func main() {
 		miners[minerName] = &minerStructTemp
 
 		//Start one new gorutine for each miner
-		go rpcClient(minerName, miner.IP, 10, &minerStructTemp)
-		log.Printf("    Started %s(%s) thread", minerName, miner.IP)
+		go rpcClient(minerName, miner.IP, 10, &minerStructTemp, wg)
+		// log.Printf("    Started %s(%s) thread", minerName, miner.IP)
 	}
-	log.Println("...done starting rpc-client threads")
+	log.Println("...Waiting for every thread to be started")
+	wg.Wait()
 
-	log.Println("Starting web server")
-	//time.Sleep(5 * time.Second)
+	log.Println("All thread started, starting web server")
 	webServerMain()
 }

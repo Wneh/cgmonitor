@@ -2,5 +2,5 @@
 	[miners.alpha]
 	ip = "192.168.1.102:4028"
 
-	[miners	.beta]
+	[miners.beta]
 	ip = "192.168.1.103:4028"

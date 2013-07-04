@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"time"
+	"sync"
 )
 
 type Client struct {
@@ -19,18 +20,16 @@ type Client struct {
 }
 
 //Main function for fetching information from one client
-func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
+func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation, wg *sync.WaitGroup) {
 	//Add everything except the connection
 	c := Client{name, ip, nil, refInt, minerInfo}
 
 	clientRequests := make(chan RpcRequest)
 
 	//Start the thread the will keep doing summary requests
-	go SummaryHandler(clientRequests, minerInfo, &c)
+	go SummaryHandler(clientRequests, minerInfo, &c, wg)
 	//Start another thread the will ask the devs requests
-	go DevsHandler(clientRequests, minerInfo, &c)
-
-	//fmt.Printf("Empty byte array%v\n",make([]byte,0))
+	go DevsHandler(clientRequests, minerInfo, &c, wg)
 
 	//Wait for new requst to make from the clienReequest channel
 	for r := range clientRequests {
@@ -59,7 +58,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 }
 
 //Making summary requests to the cgminer and parse the result.
-func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client) {
+func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, wg *sync.WaitGroup) {
 	request := RpcRequest{"{\"command\":\"summary\"}", make(chan []byte)}
 
 	var response []byte
@@ -76,6 +75,9 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 	minerInfo.SumWrap.SummaryRow = summaryRow
 	//Now unlock
 	minerInfo.SumWrap.Mu.Unlock()
+
+	//Signal that the thread is started
+	wg.Done()
 
 	for {
 		res <- request
@@ -107,11 +109,14 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 }
 
 //Making devs request to the cgminer and parse the result
-func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client) {
+func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, wg *sync.WaitGroup) {
 	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte)}
 
 	var response []byte
 	var devs DevsResponse
+
+	//Signal that the thread is started
+	wg.Done()
 
 	for {
 		res <- request
