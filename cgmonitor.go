@@ -8,6 +8,7 @@ import (
 
 //Struct representing the config.toml
 type tomlConfig struct {
+	Webserverport int
 	Miners map[string]miner //Key is the miner name.
 }
 
@@ -59,7 +60,7 @@ func main() {
 	log.Println("Begin starting rpc-client threads...")
 	//Start to grab information from every miner
 	for minerName, miner := range config.Miners {
-		//Add one to the WaitGroup for each miner
+		//Add two(one for each thread) to the WaitGroup for each miner
 		wg.Add(2)
 
 		log.Printf("Starting: %s(%s)\n", minerName, miner.IP)
@@ -72,11 +73,10 @@ func main() {
 
 		//Start one new gorutine for each miner
 		go rpcClient(minerName, miner.IP, 10, &minerStructTemp, wg)
-		// log.Printf("    Started %s(%s) thread", minerName, miner.IP)
 	}
 	log.Println("...Waiting for every thread to be started")
 	wg.Wait()
 
 	log.Println("All thread started, starting web server")
-	webServerMain()
+	webServerMain(config.Webserverport)
 }

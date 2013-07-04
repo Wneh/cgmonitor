@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strconv"
 )
 
 //Precache all templates in folder templates at start
@@ -13,15 +14,14 @@ var templates = template.Must(template.ParseFiles(filepath.Join("templates", "mi
 	filepath.Join("templates", "miner.html")))
 
 //Starts the webserver
-func webServerMain() {
-
+func webServerMain(port int) {
 	r := mux.NewRouter()
 	r.HandleFunc("/", HomeHandler)
 	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}", MinerHandler)
 	r.HandleFunc("/miners", MinersHandler)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./web-root/")))
 	http.Handle("/", r)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":"+strconv.Itoa(port), nil)
 }
 
 //Request handler for a single miner information
