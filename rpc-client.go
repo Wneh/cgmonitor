@@ -28,7 +28,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 	//Start the thread the will keep doing summary requests
 	go SummaryHandler(clientRequests, minerInfo, &c)
 	//Start another thread the will ask the devs requests
-	//go DevsHandler(clientRequests, minerInfo, &c)
+	go DevsHandler(clientRequests, minerInfo, &c)
 
 	//fmt.Printf("Empty byte array%v\n",make([]byte,0))
 
@@ -63,18 +63,14 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 	request := RpcRequest{"{\"command\":\"summary\"}", make(chan []byte)}
 
 	var response []byte
-	summary := SummaryResponse{}
-	summary.Summary = append(summary.Summary, SummaryObject{})
-	summary.Status = append(summary.Status, StatusObject{})
-
-	fmt.Printf("%v\n", summary)
+	//Creating an empty instance of everything
+	summary := SummaryResponse{[]StatusObject{StatusObject{}},[]SummaryObject{SummaryObject{}},0}
 
 	for {
 		res <- request
 		response = <-request.ResultChan
 
-		//fmt.Printf("Response: %s\n", response)
-
+		//If we got the response back unmarshal it
 		if len(response) != 0 {
 			fmt.Printf("Response: %s\n", response)
 			err := json.Unmarshal(response, &summary)
@@ -106,11 +102,13 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client) 
 		res <- request
 		response = <-request.ResultChan
 
-		fmt.Printf("Response: %s\n", response)
-		err := json.Unmarshal(response, &devs)
-		//Check for errors
-		if err != nil {
-			fmt.Println(err.Error())
+		//fmt.Printf("Response: %s\n", response)
+		if len(response) != 0 {
+			err := json.Unmarshal(response, &devs)
+			//Check for errors
+			if err != nil {
+				fmt.Println(err.Error())
+			}
 		}
 		//Lock it
 		minerInfo.DevsWrap.Mu.Lock()

@@ -30,8 +30,6 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["key"]
 
-	fmt.Println(key)
-
 	//Get the array that hold the information about the devs
 	miners[key].DevsWrap.Mu.RLock()
 	tempDevs := miners[key].DevsWrap.Devs
@@ -41,18 +39,12 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
-	// fmt.Fprintf(w, "The miner your looking for is: %s", key)
 }
 
 //Request handler for a creatin summary for all miners
 func MinersHandler(w http.ResponseWriter, r *http.Request) {
 	//Generate the correct structure for the template
 	tempMiners := createMinersTemplate()
-
-	// for _, value := range tempMiners.Rows {
-	// 	fmt.Printf("%s\n", value)
-	// }
 
 	err := templates.ExecuteTemplate(w, "miners.html", tempMiners)
 	if err != nil {
