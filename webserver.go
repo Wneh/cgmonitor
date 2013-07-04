@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"html/template"
 	"net/http"
@@ -9,9 +8,9 @@ import (
 )
 
 //Precache all templates in folder templates at start
-var templates = template.Must(template.ParseFiles(filepath.Join("templates", "miners.html"), 
-												  filepath.Join("templates", "index.html"),
-												  filepath.Join("templates", "miner.html")))
+var templates = template.Must(template.ParseFiles(filepath.Join("templates", "miners.html"),
+	filepath.Join("templates", "index.html"),
+	filepath.Join("templates", "miner.html")))
 
 //Starts the webserver
 func webServerMain() {
@@ -61,16 +60,8 @@ func createMinersTemplate() MinersTemplate {
 
 		//Lock it
 		minerStructTemp.SumWrap.Mu.RLock()
-		//Grab the SummaryObject
-		//I think it will always be only 1 object of them
-		//so just take index 0 in Summary	
-		var summary = &minerStructTemp.SumWrap.Summary.Summary[0]
-
-		//Create a new row and add some infomation
-		var row = MinerRow{minerStructTemp.Name, summary.Accepted, summary.Rejected, summary.MHSAv, summary.BestShare}
-
-		rows = append(rows, row)
-
+		//Add it
+		rows = append(rows, minerStructTemp.SumWrap.SummaryRow)
 		//Unlock it
 		minerStructTemp.SumWrap.Mu.RUnlock()
 	}

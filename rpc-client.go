@@ -40,7 +40,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 		//If c.Conn is still nil then we couldn't connect
 		//So send back an empty slice of bytes
 		if c.Conn == nil {
-			r.ResultChan <- make([]byte,0)
+			r.ResultChan <- make([]byte, 0)
 		} else {
 			//Send the request to the cgminer
 			b := sendCommand(&c.Conn, r.Request)
@@ -53,8 +53,8 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation) {
 			 */
 			c.Conn.Close()
 			//And send back the result
-			r.ResultChan <- b	
-		}	
+			r.ResultChan <- b
+		}
 	}
 }
 
@@ -64,7 +64,18 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 
 	var response []byte
 	//Creating an empty instance of everything
-	summary := SummaryResponse{[]StatusObject{StatusObject{}},[]SummaryObject{SummaryObject{}},0}
+	summary := SummaryResponse{[]StatusObject{StatusObject{}}, []SummaryObject{SummaryObject{}}, 0}
+	summaryRow := MinerRow{}
+	summaryRow.Name = c.Name
+
+	//Save the default values
+	//Lock it
+	minerInfo.SumWrap.Mu.Lock()
+	//Save the summary
+	minerInfo.SumWrap.Summary = summary
+	minerInfo.SumWrap.SummaryRow = summaryRow
+	//Now unlock
+	minerInfo.SumWrap.Mu.Unlock()
 
 	for {
 		res <- request
@@ -72,17 +83,21 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 
 		//If we got the response back unmarshal it
 		if len(response) != 0 {
-			fmt.Printf("Response: %s\n", response)
+			//fmt.Printf("Response: %s\n", response)
 			err := json.Unmarshal(response, &summary)
 			//Check for errors
 			if err != nil {
 				fmt.Println(err.Error())
-			}	
+			}
+
+			//Update the summaryrow
+			summaryRow = MinerRow{c.Name, summary.Summary[0].Accepted, summary.Summary[0].Rejected, summary.Summary[0].MHSAv, summary.Summary[0].BestShare}
 		}
 		//Lock it
 		minerInfo.SumWrap.Mu.Lock()
 		//Save the summary
 		minerInfo.SumWrap.Summary = summary
+		minerInfo.SumWrap.SummaryRow = summaryRow
 		//Now unlock
 		minerInfo.SumWrap.Mu.Unlock()
 
@@ -128,7 +143,7 @@ func createConnection(ip string) net.Conn {
 
 	//Check for errors
 	if err != nil {
-		log.Printf("createConnection: %s, check if the ip is correct or cgminer's api is enabled",err)
+		log.Printf("createConnection: %s, check if the ip is correct or cgminer's api is enabled", err)
 		return nil
 	}
 	return conn

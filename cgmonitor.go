@@ -17,19 +17,20 @@ type miner struct {
 }
 
 type MinerInformation struct {
-	Name    string          //The miners name
-	Version string          //Version responce
-	SumWrap SummaryWrapper //Summary
-	DevsWrap 	DevsWrapper	//Devs
+	Name     string         //The miners name
+	Version  string         //Version responce
+	SumWrap  SummaryWrapper //Summary
+	DevsWrap DevsWrapper    //Devs
 }
 
 type SummaryWrapper struct {
-	Mu sync.RWMutex
-	Summary SummaryResponse
+	Mu         sync.RWMutex
+	Summary    SummaryResponse
+	SummaryRow MinerRow
 }
 
 type DevsWrapper struct {
-	Mu sync.RWMutex
+	Mu   sync.RWMutex
 	Devs DevsResponse
 }
 
