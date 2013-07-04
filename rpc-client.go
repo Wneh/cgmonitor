@@ -85,7 +85,6 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 
 		//If we got the response back unmarshal it
 		if len(response) != 0 {
-			//fmt.Printf("Response: %s\n", response)
 			err := json.Unmarshal(response, &summary)
 			//Check for errors
 			if err != nil {
@@ -122,7 +121,6 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 		res <- request
 		response = <-request.ResultChan
 
-		//fmt.Printf("Response: %s\n", response)
 		if len(response) != 0 {
 			err := json.Unmarshal(response, &devs)
 			//Check for errors

@@ -56,8 +56,6 @@ func main() {
 	}
 	log.Println("...done reading config file")
 
-	//wg.Add(len(config.Miners*2))
-
 	log.Println("Begin starting rpc-client threads...")
 	//Start to grab information from every miner
 	for minerName, miner := range config.Miners {
