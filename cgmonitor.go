@@ -1,15 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"github.com/BurntSushi/toml"
 	"log"
+	"os"
 	"sync"
 )
 
 //Struct representing the config.toml
 type tomlConfig struct {
-	Webserverport int
-	Miners map[string]miner //Key is the miner name.
+	Webserverport int              //Webserver port
+	Miners        map[string]miner //Key is the miner name.
 }
 
 //Struct for config file type [miners.<foo>] 
@@ -46,6 +48,9 @@ func main() {
 
 	miners = make(map[string]*MinerInformation)
 
+	//Check that config file exists
+	configExists()
+
 	log.Println("Begin reading config file...")
 	//Start by reading the config file
 	var config tomlConfig
@@ -79,4 +84,20 @@ func main() {
 
 	log.Println("All thread started, starting web server")
 	webServerMain(config.Webserverport)
+}
+
+func configExists() {
+	if _, err := os.Stat("config.toml"); err != nil {
+		if os.IsNotExist(err) {
+			// file does not exist
+			log.Println("No config file found, creating example config file.")
+			createExampleConf()
+		} else {
+			// other error
+		}
+	}
+}
+
+func createExampleConf() {
+
 }
