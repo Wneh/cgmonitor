@@ -70,10 +70,24 @@ func createMinersTemplate() MinersTemplate {
 
 //Default handler
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "index.html", "")
+
+	hw := HomeWrapper{}
+
+	//Calculate the total hashrate
+	for _, value := range miners {
+		var minerStructTemp = *value
+
+		hw.TotalMHS += minerStructTemp.SumWrap.SummaryRow.MHSAv
+	}
+
+	err := templates.ExecuteTemplate(w, "index.html", hw)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+type HomeWrapper struct {
+	TotalMHS float64
 }
 
 type MinersTemplate struct {
