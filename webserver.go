@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"fmt"
 )
 
 //Precache all templates in folder templates at start
@@ -28,6 +29,8 @@ func webServerMain(port int) {
 func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["key"]
+
+	fmt.Printf("%v\n",r)
 
 	//Get the array that hold the information about the devs
 	miners[key].DevsWrap.Mu.RLock()

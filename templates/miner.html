@@ -79,6 +79,7 @@
 							<th>Temperature</th>
 							<th>Fan Speed</th>
 							<th>Fan Percent</th>
+							<th>On/Off</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -93,6 +94,11 @@
 							<td>{{.Temperature}}C</td>
 							<td>{{.FanSpeed}}RPM</td>
 							<td>{{.FanPercent}}%</td>
+							<td><form name="onoff" action="/miner" method="post">
+								<input type=”hidden” name=”action” value=”0”>
+								<input type="submit" value="Turn off">
+								</form>
+							</td>
 				    	</tr>{{end}}
 					</tbody>
 				</table>
