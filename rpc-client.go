@@ -7,8 +7,8 @@ import (
 	"io"
 	"log"
 	"net"
-	"time"
 	"sync"
+	"time"
 )
 
 type Client struct {
@@ -127,7 +127,19 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 			if err != nil {
 				fmt.Println(err.Error())
 			}
+			//Set the onoff boolean for every device
+			for i := 0; i < len(devs.Devs); i++ {
+				//Get the variable
+				var dev = &devs.Devs[i]
+				//Make the comparison
+				if dev.Enabled == "Y" {
+					dev.OnOff = true
+				} else {
+					dev.OnOff = false
+				}
+			}
 		}
+
 		//Lock it
 		minerInfo.DevsWrap.Mu.Lock()
 		//Save the summary
@@ -277,4 +289,5 @@ type DevObject struct {
 	DifficultyRejected  float64 `json:"Difficulty Rejected"`
 	LastShareDifficulty float64 `json:"Last Share Difficulty"`
 	LastValidWork       int     `json:"Last Valid Work"`
+	OnOff               bool    //This is an extra boolean used for html template parsing
 }

@@ -1,12 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"html/template"
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"fmt"
 )
 
 //Precache all templates in folder templates at start
@@ -30,14 +30,18 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["key"]
 
-	fmt.Printf("%v\n",r)
+	fmt.Printf("%v\n", r)
+
+	miner := MinerWrapper{}
+	miner.Name = key
 
 	//Get the array that hold the information about the devs
 	miners[key].DevsWrap.Mu.RLock()
-	tempDevs := miners[key].DevsWrap.Devs
+	miner.Devs = miners[key].DevsWrap.Devs
 	miners[key].DevsWrap.Mu.RUnlock()
+	fmt.Printf("Onoff: %s\n", miner.Devs.Devs[0].OnOff)
 
-	err := templates.ExecuteTemplate(w, "miner.html", tempDevs)
+	err := templates.ExecuteTemplate(w, "miner.html", miner)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -87,6 +91,11 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+type MinerWrapper struct {
+	Name string
+	Devs DevsResponse
 }
 
 type HomeWrapper struct {
