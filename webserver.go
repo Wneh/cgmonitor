@@ -31,23 +31,22 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	key := vars["key"]
 
 	//Check for enable disable gpu event
-    status := r.FormValue("status")
+	status := r.FormValue("status")
 	//If status as len 1 then
 	if len(status) == 1 {
 		//Parse the values
 		statusNumber, err := strconv.Atoi(status)
-    	if err != nil {
-    		http.
-        	http.Error(w, err.Error(), http.StatusInternalServerError)
-        	return
-    	}
-    	deviceNumber, err := strconv.Atoi(r.FormValue("device"))
-    	if err != nil {
-        	http.Error(w, err.Error(), http.StatusInternalServerError)
-        	return
-    	}
-    	fmt.Printf("Status: %s, Device: %s",statusNumber,deviceNumber)
-    	
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		deviceNumber, err := strconv.Atoi(r.FormValue("device"))
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		fmt.Printf("Status: %v, Device: %v\n", statusNumber, deviceNumber)
+		enableDisable(statusNumber, deviceNumber)
 	}
 
 	miner := MinerWrapper{}

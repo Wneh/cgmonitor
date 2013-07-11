@@ -16,13 +16,15 @@ type Client struct {
 	IP              string            //Ip to the cgminer including port
 	Conn            net.Conn          //Connection made with net.Dial
 	RefreshInterval int               //Seconds between fetching information
-	MinerInfo       *MinerInformation //Struc to put the answers for the webserver	
+	MinerInfo       *MinerInformation //Struct to put the answers for the webserver
 }
 
 //Main function for fetching information from one client
 func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation, wg *sync.WaitGroup) {
 	//Add everything except the connection
 	c := Client{name, ip, nil, refInt, minerInfo}
+	//Save the Client struct in the MinerInfo
+	c.MinerInfo.Client = &c
 
 	clientRequests := make(chan RpcRequest)
 
@@ -150,6 +152,23 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 		//Now sleep
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
 	}
+}
+
+func enableDisable(status, device int) {
+	var request string
+
+	switch status {
+	case 0:
+		request = fmt.Sprintf("{\"command\":\"gpudisable\",\"parameter\":\"%v\"}", device)
+	case 1:
+		request = fmt.Sprintf("{\"command\":\"gpuenable\",\"parameter\":\"%v\"}", device)
+	}
+
+	fmt.Println("The request:", request)
+
+	var response []byte
+	var devs DevsResponse
+
 }
 
 // Returns a TCP connection to the ip 
