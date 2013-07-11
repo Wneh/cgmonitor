@@ -30,7 +30,25 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["key"]
 
-	fmt.Printf("%v\n", r)
+	//Check for enable disable gpu event
+    status := r.FormValue("status")
+	//If status as len 1 then
+	if len(status) == 1 {
+		//Parse the values
+		statusNumber, err := strconv.Atoi(status)
+    	if err != nil {
+    		http.
+        	http.Error(w, err.Error(), http.StatusInternalServerError)
+        	return
+    	}
+    	deviceNumber, err := strconv.Atoi(r.FormValue("device"))
+    	if err != nil {
+        	http.Error(w, err.Error(), http.StatusInternalServerError)
+        	return
+    	}
+    	fmt.Printf("Status: %s, Device: %s",statusNumber,deviceNumber)
+    	
+	}
 
 	miner := MinerWrapper{}
 	miner.Name = key
@@ -39,7 +57,7 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	miners[key].DevsWrap.Mu.RLock()
 	miner.Devs = miners[key].DevsWrap.Devs
 	miners[key].DevsWrap.Mu.RUnlock()
-	fmt.Printf("Onoff: %s\n", miner.Devs.Devs[0].OnOff)
+	//fmt.Printf("Onoff: %s\n", miner.Devs.Devs[0].OnOff)
 
 	err := templates.ExecuteTemplate(w, "miner.html", miner)
 	if err != nil {
