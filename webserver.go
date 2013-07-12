@@ -46,7 +46,7 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		fmt.Printf("Status: %v, Device: %v\n", statusNumber, deviceNumber)
-		enableDisable(statusNumber, deviceNumber)
+		enableDisable(statusNumber, deviceNumber,key)
 	}
 
 	miner := MinerWrapper{}

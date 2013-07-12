@@ -17,16 +17,18 @@ type Client struct {
 	Conn            net.Conn          //Connection made with net.Dial
 	RefreshInterval int               //Seconds between fetching information
 	MinerInfo       *MinerInformation //Struct to put the answers for the webserver
+	ClientRequests chan RpcRequest
 }
 
 //Main function for fetching information from one client
 func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation, wg *sync.WaitGroup) {
 	//Add everything except the connection
-	c := Client{name, ip, nil, refInt, minerInfo}
+	c := Client{name, ip, nil, refInt, minerInfo,nil}
 	//Save the Client struct in the MinerInfo
 	c.MinerInfo.Client = &c
 
 	clientRequests := make(chan RpcRequest)
+	c.ClientRequests = clientRequests
 
 	//Start the thread the will keep doing summary requests
 	go SummaryHandler(clientRequests, minerInfo, &c, wg)
@@ -154,21 +156,25 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 	}
 }
 
-func enableDisable(status, device int) {
-	var request string
+func enableDisable(status, device int, name string) {
+	var request RpcRequest
 
 	switch status {
 	case 0:
-		request = fmt.Sprintf("{\"command\":\"gpudisable\",\"parameter\":\"%v\"}", device)
+		request = RpcRequest{fmt.Sprintf("{\"command\":\"gpudisable\",\"parameter\":\"%v\"}", device), make(chan []byte)}
 	case 1:
-		request = fmt.Sprintf("{\"command\":\"gpuenable\",\"parameter\":\"%v\"}", device)
+		request = RpcRequest{fmt.Sprintf("{\"command\":\"gpuenable\",\"parameter\":\"%v\"}", device), make(chan []byte)}
 	}
 
-	fmt.Println("The request:", request)
+	fmt.Println("The request:", request.Request)
 
 	var response []byte
-	var devs DevsResponse
+	//var devs DevsResponse
 
+	miners[name].Client.ClientRequests <- request
+	response = <-request.ResultChan
+
+	fmt.Println("Result from restart:",response)
 }
 
 // Returns a TCP connection to the ip 
