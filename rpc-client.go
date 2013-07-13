@@ -12,12 +12,14 @@ import (
 )
 
 type Client struct {
-	Name            string            //Name of the miner
-	IP              string            //Ip to the cgminer including port
-	Conn            net.Conn          //Connection made with net.Dial
-	RefreshInterval int               //Seconds between fetching information
-	MinerInfo       *MinerInformation //Struct to put the answers for the webserver
-	ClientRequests  chan RpcRequest
+	Name             string            //Name of the miner
+	IP               string            //Ip to the cgminer including port
+	Conn             net.Conn          //Connection made with net.Dial
+	RefreshInterval  int               //Seconds between fetching information
+	MinerInfo        *MinerInformation //Struct to put the answers for the webserver
+	ClientRequests   chan RpcRequest   //Channel for sending rpc request to cgminer
+	MHSThresLimit    float64           //MHSAv should not be below this
+	LastSumTimestamp int               //Last timestamp from summary request
 }
 
 //Main function for fetching information from one client
@@ -108,6 +110,31 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 
 		//Now sleep
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
+	}
+}
+
+//Checks the current mhs average value against the threshold.
+//The value should have been lower for 10 minutes 
+//before it restarts the miner  
+func CheckMhsThresHold(mhs float64, time int, c *Client) {
+	switch {
+	//Good - It's abowe the limit
+	case mhs >= c.MHSThresLimit:
+		//Save the last timestamp
+		c.LastSumTimestamp = time
+		fmt.Println("Hashrate: Good")
+		return
+	//Meeh - Under the limit but it hasn't gone 10 min yey
+	case mhs < c.MHSThresLimit && (time-c.LastSumTimestamp) < 600:
+		//Dont to nothing just wait and see if the hashrate
+		//goes up or if it keeps down
+		fmt.Println("Hashrate: Below threshold but for under 10 min")
+		return
+	//Oh noes - Below the threshold and for longer then 10 min
+	case mhs < c.MHSThresLimit && (time-c.LastSumTimestamp) >= 600:
+		//Restart the miner
+		fmt.Println("Hashrate: Below and for long then 10 min -> restarting miner")
+		return
 	}
 }
 

@@ -53,12 +53,12 @@ func EnableDisableHandler(w http.ResponseWriter, r *http.Request) {
 	//Parse the values
 	statusNumber, err := strconv.Atoi(r.FormValue("status"))
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	deviceNumber, err := strconv.Atoi(r.FormValue("device"))
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	fmt.Printf("Status: %v, Device: %v\n", statusNumber, deviceNumber)
