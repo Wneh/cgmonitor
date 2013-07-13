@@ -16,7 +16,7 @@ type tomlConfig struct {
 
 //Struct for config file type [miners.<foo>] 
 type miner struct {
-	IP string
+	IP        string
 	Threshold float64
 }
 

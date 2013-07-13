@@ -25,7 +25,7 @@ type Client struct {
 //Main function for fetching information from one client
 func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation, wg *sync.WaitGroup) {
 	//Add everything except the connection
-	c := Client{name, ip, nil, refInt, minerInfo, nil,0,0}
+	c := Client{name, ip, nil, refInt, minerInfo, nil, 0, 0}
 	//Save the Client struct in the MinerInfo
 	c.MinerInfo.Client = &c
 
