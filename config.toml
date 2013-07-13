@@ -3,6 +3,4 @@ webserverport = 8080
 [miners]
 	[miners.alpha]
 	ip = "192.168.1.102:4028"
-
-	[miners.beta]
-	ip = "192.168.1.103:4028"
+	threshold = 0.4
