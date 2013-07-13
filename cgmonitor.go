@@ -24,7 +24,7 @@ type MinerInformation struct {
 	Version  string         //Version responce
 	SumWrap  SummaryWrapper //Summary
 	DevsWrap DevsWrapper    //Devs
-	Client        *Client      //RPC Client that holds information
+	Client   *Client        //RPC Client that holds information
 }
 
 type SummaryWrapper struct {

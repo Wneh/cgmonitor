@@ -19,6 +19,7 @@ func webServerMain(port int) {
 	r := mux.NewRouter()
 	r.HandleFunc("/", HomeHandler)
 	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}", MinerHandler)
+	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}/onoff", EnableDisableHandler)
 	r.HandleFunc("/miners", MinersHandler)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./web-root/")))
 	http.Handle("/", r)
@@ -29,25 +30,6 @@ func webServerMain(port int) {
 func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["key"]
-
-	//Check for enable disable gpu event
-	status := r.FormValue("status")
-	//If status as len 1 then
-	if len(status) == 1 {
-		//Parse the values
-		statusNumber, err := strconv.Atoi(status)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		deviceNumber, err := strconv.Atoi(r.FormValue("device"))
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		fmt.Printf("Status: %v, Device: %v\n", statusNumber, deviceNumber)
-		enableDisable(statusNumber, deviceNumber,key)
-	}
 
 	miner := MinerWrapper{}
 	miner.Name = key
@@ -62,6 +44,26 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func EnableDisableHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	key := vars["key"]
+
+	//Parse the values
+	statusNumber, err := strconv.Atoi(r.FormValue("status"))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	deviceNumber, err := strconv.Atoi(r.FormValue("device"))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	fmt.Printf("Status: %v, Device: %v\n", statusNumber, deviceNumber)
+	enableDisable(statusNumber, deviceNumber, key)
+	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }
 
 //Request handler for a creatin summary for all miners

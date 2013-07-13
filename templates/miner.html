@@ -96,7 +96,7 @@
 							<td>{{.Temperature}}C</td>
 							<td>{{.FanSpeed}}RPM</td>
 							<td>{{.FanPercent}}%</td>
-							<td><form name="onoff" action="/miner/{{$name}}" method="post">
+							<td><form name="onoff" action="/miner/{{$name}}/onoff" method="post">
 								<input type="hidden" name="status" value="{{if .OnOff}}0{{else}}1{{end}}">
 								<input type="hidden" name="device" value="{{.GPU}}"	>
 								{{if .OnOff}}

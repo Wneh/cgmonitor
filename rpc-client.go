@@ -17,13 +17,13 @@ type Client struct {
 	Conn            net.Conn          //Connection made with net.Dial
 	RefreshInterval int               //Seconds between fetching information
 	MinerInfo       *MinerInformation //Struct to put the answers for the webserver
-	ClientRequests chan RpcRequest
+	ClientRequests  chan RpcRequest
 }
 
 //Main function for fetching information from one client
 func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation, wg *sync.WaitGroup) {
 	//Add everything except the connection
-	c := Client{name, ip, nil, refInt, minerInfo,nil}
+	c := Client{name, ip, nil, refInt, minerInfo, nil}
 	//Save the Client struct in the MinerInfo
 	c.MinerInfo.Client = &c
 
@@ -174,7 +174,7 @@ func enableDisable(status, device int, name string) {
 	miners[name].Client.ClientRequests <- request
 	response = <-request.ResultChan
 
-	fmt.Println("Result from restart:",response)
+	fmt.Println("Result from restart:", response)
 }
 
 // Returns a TCP connection to the ip 
