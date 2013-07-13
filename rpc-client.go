@@ -25,7 +25,7 @@ type Client struct {
 //Main function for fetching information from one client
 func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation, wg *sync.WaitGroup) {
 	//Add everything except the connection
-	c := Client{name, ip, nil, refInt, minerInfo, nil}
+	c := Client{name, ip, nil, refInt, minerInfo, nil,0,0}
 	//Save the Client struct in the MinerInfo
 	c.MinerInfo.Client = &c
 
@@ -96,6 +96,8 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 			if err != nil {
 				fmt.Println(err.Error())
 			}
+
+			CheckMhsThresHold(summary.Summary[0].MHSAv, summary.Status[0].When, c)
 
 			//Update the summaryrow
 			summaryRow = MinerRow{c.Name, summary.Summary[0].Accepted, summary.Summary[0].Rejected, summary.Summary[0].MHSAv, summary.Summary[0].BestShare}
