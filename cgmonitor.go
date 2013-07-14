@@ -101,7 +101,7 @@ func configExists() {
 }
 
 func createExampleConf() {
-	b := []byte("webserverport = 8080\n\n[miners]\n    [miners.alpha]\n    ip = \"127.0.0.1:4028\"")
+	b := []byte("webserverport = 8080\n\n[miners]\n    [miners.alpha]\n    ip = \"127.0.0.1:4028\"]\n    threshold = 0.1")
 
 	err := ioutil.WriteFile("config.toml", b, 0644)
 	if err != nil {
