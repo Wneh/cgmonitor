@@ -23,9 +23,9 @@ type Client struct {
 }
 
 //Main function for fetching information from one client
-func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation, wg *sync.WaitGroup) {
+func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation, wg *sync.WaitGroup, threshold float64) {
 	//Add everything except the connection
-	c := Client{name, ip, nil, refInt, minerInfo, nil, 0, 0}
+	c := Client{name, ip, nil, refInt, minerInfo, nil, threshold, int(time.Now().Unix())}
 	//Save the Client struct in the MinerInfo
 	c.MinerInfo.Client = &c
 
@@ -97,8 +97,6 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 				fmt.Println(err.Error())
 			}
 
-			CheckMhsThresHold(summary.Summary[0].MHSAv, summary.Status[0].When, c)
-
 			//Update the summaryrow
 			summaryRow = MinerRow{c.Name, summary.Summary[0].Accepted, summary.Summary[0].Rejected, summary.Summary[0].MHSAv, summary.Summary[0].BestShare}
 		}
@@ -118,24 +116,24 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 //Checks the current mhs average value against the threshold.
 //The value should have been lower for 10 minutes 
 //before it restarts the miner  
-func CheckMhsThresHold(mhs float64, time int, c *Client) {
+func CheckMhsThresHold(mhs float64, lasttime int, c *Client) {
 	switch {
 	//Good - It's abowe the limit
 	case mhs >= c.MHSThresLimit:
 		//Save the last timestamp
-		c.LastSumTimestamp = time
-		fmt.Println("Hashrate: Good")
+		c.LastSumTimestamp = lasttime
+		fmt.Printf("Hashrate: Good(%v > %v)\n", mhs, c.MHSThresLimit)
 		return
 	//Meeh - Under the limit but it hasn't gone 10 min yey
-	case mhs < c.MHSThresLimit && (time-c.LastSumTimestamp) < 600:
+	case mhs < c.MHSThresLimit && (lasttime-c.LastSumTimestamp) < 600:
 		//Dont to nothing just wait and see if the hashrate
 		//goes up or if it keeps down
-		fmt.Println("Hashrate: Below threshold but for under 10 min")
+		fmt.Printf("Hashrate: Below threshold(%v < %v) for %v secs which is under 10 min\n", mhs, c.MHSThresLimit, (lasttime - c.LastSumTimestamp))
 		return
 	//Oh noes - Below the threshold and for longer then 10 min
-	case mhs < c.MHSThresLimit && (time-c.LastSumTimestamp) >= 600:
+	case mhs < c.MHSThresLimit && (lasttime-c.LastSumTimestamp) >= 600:
 		//Restart the miner
-		fmt.Println("Hashrate: Below and for long then 10 min -> restarting miner")
+		fmt.Printf("Hashrate: Below threshold(%v < %v) for %v secs which is over 10 min\n", mhs, c.MHSThresLimit, (lasttime - c.LastSumTimestamp))
 		return
 	}
 }
@@ -160,7 +158,9 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 			if err != nil {
 				fmt.Println(err.Error())
 			}
+			mhs5s := 0.0
 			//Set the onoff boolean for every device
+			//Also sum up the MHS5s
 			for i := 0; i < len(devs.Devs); i++ {
 				//Get the variable
 				var dev = &devs.Devs[i]
@@ -170,7 +170,10 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 				} else {
 					dev.OnOff = false
 				}
+				//Sum upp the MHS5s
+				mhs5s += dev.MHS5s
 			}
+			CheckMhsThresHold(mhs5s, devs.Status[0].When, c)
 		}
 
 		//Lock it

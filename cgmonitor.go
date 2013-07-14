@@ -79,7 +79,7 @@ func main() {
 		miners[minerName] = &minerStructTemp
 
 		//Start one new gorutine for each miner
-		go rpcClient(minerName, miner.IP, 10, &minerStructTemp, wg)
+		go rpcClient(minerName, miner.IP, 10, &minerStructTemp, wg, miner.Threshold)
 	}
 	log.Println("...Waiting for every thread to be started")
 	wg.Wait()
