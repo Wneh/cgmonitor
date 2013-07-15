@@ -81,6 +81,7 @@
 							<th>Fan Speed</th>
 							<th>Fan Percent</th>
 							<th>Enable/Disable</th>
+							<th>Settings</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -106,9 +107,24 @@
 								{{end}}
 								</form>
 							</td>
+							<td><a href="#myModal" role="button" class="btn" data-toggle="modal">Launch demo modal</a></td>
 				    	</tr>{{end}}
 					</tbody>
 				</table>
+				<!-- Modal -->
+				<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  					<div class="modal-header">
+    					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    					<h3 id="myModalLabel">Change settings</h3>
+  					</div>
+  					<div class="modal-body">
+    					<p>Form will be here</p>
+  					</div>
+  					<div class="modal-footer">
+    					<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    					<button class="btn btn-primary">Save changes</button>
+  					</div>
+				</div>
 			</div>
 		</div>
     	<script src="./../js/jquery-1.10.1.min.js"></script>
