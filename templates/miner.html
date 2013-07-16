@@ -107,15 +107,19 @@
 								{{end}}
 								</form>
 							</td>
-							<td><a href="#myModal" role="button" class="btn" data-toggle="modal">Launch demo modal</a></td>
+							<td><a href="#gpusettings{{.GPU}}" role="button" class="btn btn-primary" data-toggle="modal">GPU Settings</a></td>
 				    	</tr>{{end}}
 					</tbody>
 				</table>
-				<!-- Modal -->
-				<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+				<!-- Bunch on models for every device -->
+				{{$name := .Name}}
+				{{range .Devs.Devs}}
+				
+				<div id="gpusettings{{.GPU}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   					<div class="modal-header">
     					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    					<h3 id="myModalLabel">Change settings</h3>
+    					<h3 id="myModalLabel">Change settings for {{$name}} - #{{.GPU}}</h3>
   					</div>
   					<div class="modal-body">
     					<p>Form will be here</p>
@@ -125,6 +129,7 @@
     					<button class="btn btn-primary">Save changes</button>
   					</div>
 				</div>
+				{{end}}
 			</div>
 		</div>
     	<script src="./../js/jquery-1.10.1.min.js"></script>
