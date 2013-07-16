@@ -114,8 +114,7 @@
 
 				<!-- Bunch on models for every device -->
 				{{$name := .Name}}
-				{{range .Devs.Devs}}
-				
+				{{range .Devs.Devs}}	
 				<div id="gpusettings{{.GPU}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   					<div class="modal-header">
     					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -143,7 +142,6 @@
 						      	<label class="checkbox">
 						        	<input type="checkbox"> Write config file
 						      	</label>
-						      	<!--<button type="submit" class="btn">Send</button>-->
 						    	</div>
 						  	</div>
 							<div class="modal-footer">
