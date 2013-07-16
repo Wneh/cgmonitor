@@ -20,6 +20,7 @@ func webServerMain(port int) {
 	r.HandleFunc("/", HomeHandler)
 	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}", MinerHandler)
 	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}/onoff", EnableDisableHandler)
+	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}/gpu", GPUHandler)
 	r.HandleFunc("/miners", MinersHandler)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./web-root/")))
 	http.Handle("/", r)
@@ -110,6 +111,13 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func GPUHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	key := vars["key"]
+
+	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }
 
 type MinerWrapper struct {
