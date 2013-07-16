@@ -122,11 +122,35 @@
     					<h3 id="myModalLabel">Change settings for {{$name}} - #{{.GPU}}</h3>
   					</div>
   					<div class="modal-body">
-    					<p>Form will be here</p>
-  					</div>
-  					<div class="modal-footer">
-    					<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-    					<button class="btn btn-primary">Save changes</button>
+						<form name="gpusettings" class="form-horizontal" action="/miner/{{$name}}/gpu" method="post">
+							<!-- Hidden values -->
+							<input type="hidden" name="device" value="{{.GPU}}">
+							<!--  -->
+							<div class="control-group">
+						    	<label class="control-label" for="GPUClock">Core clock</label>
+						    	<div class="controls">
+						      		<input type="text" id="GPUClock" value="{{.GPUClock}}">
+						    	</div>
+						  	</div>
+						 	<div class="control-group">
+						    	<label class="control-label" for="MemoryClock">Memory clock</label>
+						    	<div class="controls">
+						      		<input type="text" id="MemoryClock" value="{{.MemoryClock}}">
+						    	</div>
+						  	</div>
+						  	<div class="control-group">
+						    	<div class="controls">
+						      	<label class="checkbox">
+						        	<input type="checkbox"> Write config file
+						      	</label>
+						      	<!--<button type="submit" class="btn">Send</button>-->
+						    	</div>
+						  	</div>
+							<div class="modal-footer">
+    							<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    							<button class="btn btn-primary">Save changes</button>
+  							</div>
+						</form>
   					</div>
 				</div>
 				{{end}}
