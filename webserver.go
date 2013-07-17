@@ -117,6 +117,25 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["key"]
 
+	//Parse the values
+	gpuClock, err := strconv.Atoi(r.FormValue("GPUClock"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	deviceNumber, err := strconv.Atoi(r.FormValue("device"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	gpuMemory, err := strconv.Atoi(r.FormValue("MemoryClock"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }
 
