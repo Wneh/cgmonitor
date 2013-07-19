@@ -126,9 +126,9 @@
 							<input type="hidden" name="device" value="{{.GPU}}">
 							<!--  -->
 							<div class="control-group">
-						    	<label class="control-label" for="GPUClock">Core clock</label>
+						    	<label class="control-label" for="gpuClock">Core clock</label>
 						    	<div class="controls">
-						      		<input type="text" id="GPUClock" value="{{.GPUClock}}">
+						      		<input type="text" id="gpuClock" value="{{.GPUClock}}">
 						    	</div>
 						  	</div>
 						 	<div class="control-group">
@@ -138,9 +138,15 @@
 						    	</div>
 						  	</div>
 						  	<div class="control-group">
-						    	<label class="control-label" for="MemoryClock">VDDC</label>
+						    	<label class="control-label" for="Voltage">VDDC</label>
 						    	<div class="controls">
 						      		<input type="text" id="Voltage" value="{{.GPUVoltage}}">
+						    	</div>
+						  	</div>
+						  	<div class="control-group">
+						    	<label class="control-label" for="Intensity">Intensity</label>
+						    	<div class="controls">
+						      		<input type="text" id="Intensity" value="{{.Intensity}}">
 						    	</div>
 						  	</div>
 						  	<div class="control-group">

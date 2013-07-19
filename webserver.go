@@ -118,25 +118,38 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 	key := vars["key"]
 
 	//Parse the values
-	gpuClock, err := strconv.Atoi(r.FormValue("GPUClock"))
+	deviceNumber, err := strconv.Atoi(r.FormValue("device"))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error()+"1", http.StatusInternalServerError)
 		return
 	}
 
-	deviceNumber, err := strconv.Atoi(r.FormValue("device"))
+	gpuClock, err := strconv.Atoi(r.FormValue("gpuClock"))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error()+"2", http.StatusInternalServerError)
 		return
 	}
 
 	gpuMemory, err := strconv.Atoi(r.FormValue("MemoryClock"))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error()+"3", http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Println(gpuClock,deviceNumber,gpuMemory)
+	vddc, err := strconv.Atoi(r.FormValue("Voltage"))
+	if err != nil {
+		http.Error(w, err.Error()+"4", http.StatusInternalServerError)
+		return
+	}
+
+
+	intensity, err := strconv.Atoi(r.FormValue("Intensity"))
+	if err != nil {
+		http.Error(w, err.Error()+"5", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println(gpuClock,deviceNumber,gpuMemory,vddc,intensity)
 
 	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }
