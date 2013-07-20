@@ -188,6 +188,7 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 	}
 }
 
+//Enable or disable a gpu.
 func enableDisable(status, device int, name string) {
 	var request RpcRequest
 
@@ -208,6 +209,25 @@ func enableDisable(status, device int, name string) {
 
 	fmt.Println("Result from restart:", response)
 }
+
+//Change the gpu engine clock
+func setGPUEngine(clock, device int, name string) {
+	var request RpcRequest
+
+	request = RpcRequest{fmt.Sprintf("{\"command\":\"gpuengine\",\"parameter\":\"%v,%v\"}", device,clock), make(chan []byte)
+
+	fmt.Println("The request:", request.Request)
+
+	var response []byte
+	//var devs DevsResponse
+
+	miners[name].Client.ClientRequests <- request
+	response = <-request.ResultChan
+
+	fmt.Println("Result from restart:", response)
+}
+
+
 
 // Returns a TCP connection to the ip 
 func createConnection(ip string) net.Conn {
