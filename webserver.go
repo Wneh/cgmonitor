@@ -142,14 +142,13 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	intensity, err := strconv.Atoi(r.FormValue("Intensity"))
 	if err != nil {
 		http.Error(w, err.Error()+"5", http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Println(gpuClock,deviceNumber,gpuMemory,vddc,intensity)
+	fmt.Println(gpuClock, deviceNumber, gpuMemory, vddc, intensity)
 
 	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }
