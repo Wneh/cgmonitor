@@ -15,4 +15,4 @@ $ go get github.com/gorilla/mux
 ```
 
 ##License
-MIT
+MIT - see license file
