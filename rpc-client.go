@@ -214,7 +214,7 @@ func enableDisable(status, device int, name string) {
 func setGPUEngine(clock, device int, name string) {
 	var request RpcRequest
 
-	request = RpcRequest{(fmt.Sprintf("{\"command\":\"gpuengine\",\"parameter\":\"%v\",\"parameter\":\"%v\"}", device, clock)), make(chan []byte)}
+	request = RpcRequest{(fmt.Sprintf("{\"command\":\"gpuengine\",\"parameter\":\"%v,%v\"}", device, clock)), make(chan []byte)}
 
 	fmt.Println("The request:", request.Request)
 
@@ -224,7 +224,7 @@ func setGPUEngine(clock, device int, name string) {
 	miners[name].Client.ClientRequests <- request
 	response = <-request.ResultChan
 
-	fmt.Println("Result from restart:", response)
+	fmt.Printf("Result from gpuengine: %s\n", response)
 }
 
 // Returns a TCP connection to the ip 
