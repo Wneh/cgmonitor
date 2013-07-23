@@ -136,14 +136,11 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vddc := 1.0
-	/**
-	vddc, err := strconv.Atoi(r.FormValue("Voltage"))
+	vddc, err := strconv.ParseFloat(r.FormValue("Voltage"), 64)
 	if err != nil {
 		http.Error(w, err.Error()+"4", http.StatusInternalServerError)
 		return
 	}
-	*/
 
 	intensity, err := strconv.Atoi(r.FormValue("Intensity"))
 	if err != nil {
@@ -154,6 +151,9 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(gpuClock, deviceNumber, gpuMemory, vddc, intensity)
 
 	setGPUEngine(gpuClock, deviceNumber, key)
+	setGPUMemory(gpuMemory, deviceNumber, key)
+	setVDDC(vddc, deviceNumber, key)
+	setIntensity(intensity, deviceNumber, key)
 
 	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }
