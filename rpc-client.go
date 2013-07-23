@@ -65,7 +65,7 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation, wg *syn
 
 //Making summary requests to the cgminer and parse the result.
 func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, wg *sync.WaitGroup) {
-	request := RpcRequest{"{\"command\":\"summary\"}", make(chan []byte)}
+	request := RpcRequest{"{\"command\":\"summary\"}", make(chan []byte), ""}
 
 	var response []byte
 	//Creating an empty instance of everything
@@ -140,7 +140,7 @@ func CheckMhsThresHold(mhs float64, lasttime int, c *Client) {
 
 //Making devs request to the cgminer and parse the result
 func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, wg *sync.WaitGroup) {
-	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte)}
+	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), ""}
 
 	var response []byte
 	var devs DevsResponse
@@ -194,9 +194,9 @@ func enableDisable(status, device int, name string) {
 
 	switch status {
 	case 0:
-		request = RpcRequest{fmt.Sprintf("{\"command\":\"gpudisable\",\"parameter\":\"%v\"}", device), make(chan []byte)}
+		request = RpcRequest{fmt.Sprintf("{\"command\":\"gpudisable\",\"parameter\":\"%v\"}", device), make(chan []byte), name}
 	case 1:
-		request = RpcRequest{fmt.Sprintf("{\"command\":\"gpuenable\",\"parameter\":\"%v\"}", device), make(chan []byte)}
+		request = RpcRequest{fmt.Sprintf("{\"command\":\"gpuenable\",\"parameter\":\"%v\"}", device), make(chan []byte), name}
 	}
 
 	fmt.Println("The request:", request.Request)
@@ -214,17 +214,23 @@ func enableDisable(status, device int, name string) {
 func setGPUEngine(clock, device int, name string) {
 	var request RpcRequest
 
-	request = RpcRequest{(fmt.Sprintf("{\"command\":\"gpuengine\",\"parameter\":\"%v,%v\"}", device, clock)), make(chan []byte)}
+	request = RpcRequest{(fmt.Sprintf("{\"command\":\"gpuengine\",\"parameter\":\"%v,%v\"}", device, clock)), make(chan []byte), name}
 
 	fmt.Println("The request:", request.Request)
 
-	var response []byte
+	//var response []byte
+	/**
 	//var devs DevsResponse
 
 	miners[name].Client.ClientRequests <- request
 	response = <-request.ResultChan
 
 	fmt.Printf("Result from gpuengine: %s\n", response)
+	*/
+
+	response, _ := request.Send()
+	fmt.Printf("Result from gpuengine: %s\n", response)
+
 }
 
 // Returns a TCP connection to the ip 
@@ -274,9 +280,27 @@ func sendCommand(conn *net.Conn, cmd string) []byte {
 	return b
 }
 
+//Used the send action request to a miner
+//I.E a restart or change intensity
 type RpcRequest struct {
 	Request    string
 	ResultChan chan []byte
+	Name       string
+}
+
+//Sends the request to the miner and return the answer as byte array
+func (request RpcRequest) Send() (response []byte, err error) {
+
+	miners[request.Name].Client.ClientRequests <- request
+	response = <-request.ResultChan
+
+	/*
+	 * TODO:
+	 * Check the response for the status and if something
+	 * went wront create and error
+	 */
+
+	return response, nil
 }
 
 /*

@@ -153,7 +153,7 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(gpuClock, deviceNumber, gpuMemory, vddc, intensity)
 
-	setGPUEngine(gpuClock,deviceNumber,key)
+	setGPUEngine(gpuClock, deviceNumber, key)
 
 	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }
