@@ -206,9 +206,31 @@ func enableDisable(status, device int, name string) {
 
 //Change the gpu engine clock
 func setGPUEngine(clock, device int, name string) {
-	var request RpcRequest
+	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpuengine\",\"parameter\":\"%v,%v\"}", device, clock)), make(chan []byte), name}
 
-	request = RpcRequest{(fmt.Sprintf("{\"command\":\"gpuengine\",\"parameter\":\"%v,%v\"}", device, clock)), make(chan []byte), name}
+	response, _ := request.Send()
+	fmt.Println("Response", response)
+}
+
+//Change the gpu memory clock
+func setGPUMemory(clock, device int, name string) {
+	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpumem\",\"parameter\":\"%v,%v\"}", device, clock)), make(chan []byte), name}	
+
+	response, _ := request.Send()
+	fmt.Println("Response", response)
+}
+
+//Change the vddc on gpu
+func setVDDC(voltage float64, device int, name string) {
+	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpuvddc\",\"parameter\":\"%v,%v\"}", device, voltage)), make(chan []byte), name}	
+
+	response, _ := request.Send()
+	fmt.Println("Response", response)
+}
+
+//Change the intensity on the gpu
+func setIntensity(intensity, device, name string) {
+	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpuintensity\",\"parameter\":\"%v,%v\"}", device, intensity)), make(chan []byte), name}	
 
 	response, _ := request.Send()
 	fmt.Println("Response", response)
