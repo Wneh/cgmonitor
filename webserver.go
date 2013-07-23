@@ -136,7 +136,12 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vddc, err := strconv.ParseFloat(r.FormValue("Voltage"), 64)
+	/*
+	 * Note:
+	 * Possible bugg there. It might lose precision 
+	 * with the convert! Looking into this later
+	 */
+	vddc, err := strconv.ParseFloat(r.FormValue("Voltage"), 128)
 	if err != nil {
 		http.Error(w, err.Error()+"4", http.StatusInternalServerError)
 		return

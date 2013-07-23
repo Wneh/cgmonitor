@@ -128,25 +128,25 @@
 							<div class="control-group">
 						    	<label class="control-label" for="GPUClock">Core clock</label>
 						    	<div class="controls">
-						      		<input type="text" name="GPUClock" value="{{.GPUClock}}">
+						      		<input type="number" min="150" max ="1200" name="GPUClock" value="{{.GPUClock}}" required>
 						    	</div>
 						  	</div>
 						 	<div class="control-group">
 						    	<label class="control-label" for="MemoryClock">Memory clock</label>
 						    	<div class="controls">
-						      		<input type="text" name="MemoryClock" value="{{.MemoryClock}}">
+						      		<input type="number" min="75" max ="1575" name="MemoryClock" value="{{.MemoryClock}}" required>
 						    	</div>
 						  	</div>
 						  	<div class="control-group">
 						    	<label class="control-label" for="Voltage">VDDC</label>
 						    	<div class="controls">
-						      		<input type="text" name="Voltage" value="{{.GPUVoltage}}">
+						      		<input type="number" min="0.800" max ="1.250" step="0.01" name="Voltage" value="{{.GPUVoltage}}" required>
 						    	</div>
 						  	</div>
 						  	<div class="control-group">
 						    	<label class="control-label" for="Intensity">Intensity</label>
 						    	<div class="controls">
-						      		<input type="text" name="Intensity" value="{{.Intensity}}">
+						      		<input type="number" min="-10" max ="20" name="Intensity" value="{{.Intensity}}" required>
 						    	</div>
 						  	</div>
 						  	<div class="control-group">
