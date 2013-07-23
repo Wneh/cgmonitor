@@ -153,12 +153,19 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	config := r.FormValue("Config")
+
 	fmt.Println(gpuClock, deviceNumber, gpuMemory, vddc, intensity)
 
 	setGPUEngine(gpuClock, deviceNumber, key)
 	setGPUMemory(gpuMemory, deviceNumber, key)
 	setVDDC(vddc, deviceNumber, key)
 	setIntensity(intensity, deviceNumber, key)
+
+	//Check if we shold write config file
+	if config == "on" {
+		writeConfig(key)
+	}
 
 	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }

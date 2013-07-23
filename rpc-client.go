@@ -209,7 +209,6 @@ func setGPUEngine(clock, device int, name string) {
 	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpuengine\",\"parameter\":\"%v,%v\"}", device, clock)), make(chan []byte), name}
 
 	response, _ := request.Send()
-	fmt.Printf("Response %s\n", response)
 }
 
 //Change the gpu memory clock
@@ -217,16 +216,13 @@ func setGPUMemory(clock, device int, name string) {
 	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpumem\",\"parameter\":\"%v,%v\"}", device, clock)), make(chan []byte), name}
 
 	response, _ := request.Send()
-	fmt.Printf("Response %s\n", response)
 }
 
 //Change the vddc on gpu
 func setVDDC(voltage float64, device int, name string) {
 	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpuvddc\",\"parameter\":\"%v,%v\"}", device, voltage)), make(chan []byte), name}
 
-	fmt.Printf("Request %s\n", request.Request)
 	response, _ := request.Send()
-	fmt.Printf("Response %s\n", response)
 }
 
 //Change the intensity on the gpu
@@ -234,7 +230,13 @@ func setIntensity(intensity, device int, name string) {
 	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpuintensity\",\"parameter\":\"%v,%v\"}", device, intensity)), make(chan []byte), name}
 
 	response, _ := request.Send()
-	fmt.Printf("Response %s\n", response)
+}
+
+//Write down the config file
+func writeConfig(name string) {
+	request := RpcRequest{(fmt.Sprintf("{\"command\":\"save\",\"parameter\":\"\"}")), make(chan []byte), name}
+
+	response, _ := request.Send()
 }
 
 // Returns a TCP connection to the ip 
