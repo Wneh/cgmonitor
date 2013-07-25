@@ -154,25 +154,15 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 		//Ignore the error at the moment since it not implement in the Send() yet
 		response, _ := request.Send()
 
+		//Parse the data into a DevsResponse
+		devs.Parse(response)
+
+		//Also do the threshold check
 		if len(response) != 0 {
-			err := json.Unmarshal(response, &devs)
-			//Check for errors
-			if err != nil {
-				fmt.Println(err.Error())
-			}
+			//Need to sum up the mhs5s to get the current total hashrate for the miner
 			mhs5s := 0.0
-			//Set the onoff boolean for every device
-			//Also sum up the MHS5s
 			for i := 0; i < len(devs.Devs); i++ {
-				//Get the variable
 				var dev = &devs.Devs[i]
-				//Make the comparison
-				if dev.Enabled == "Y" {
-					dev.OnOff = true
-				} else {
-					dev.OnOff = false
-				}
-				//Sum upp the MHS5s
 				mhs5s += dev.MHS5s
 			}
 			CheckMhsThresHold(mhs5s, devs.Status[0].When, c)
@@ -395,4 +385,26 @@ type DevObject struct {
 	LastShareDifficulty float64 `json:"Last Share Difficulty"`
 	LastValidWork       int     `json:"Last Valid Work"`
 	OnOff               bool    //This is an extra boolean used for html template parsing
+}
+
+//Parse raw data from a response to a DevsResponse
+func (devs *DevsResponse) Parse(response []byte) (){
+	if len(response) != 0 {
+		err := json.Unmarshal(response, &devs)
+		//Check for errors
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		//Set the onoff boolean for every device
+		for i := 0; i < len(devs.Devs); i++ {
+			//Get the variable
+			var dev = &devs.Devs[i]
+			//Make the comparison
+			if dev.Enabled == "Y" {
+				dev.OnOff = true
+			} else {
+				dev.OnOff = false
+			}
+		}
+	}
 }
