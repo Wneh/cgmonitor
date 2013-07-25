@@ -140,17 +140,19 @@ func CheckMhsThresHold(mhs float64, lasttime int, c *Client) {
 
 //Making devs request to the cgminer and parse the result
 func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, wg *sync.WaitGroup) {
-	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), ""}
+	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), c.Name}
 
-	var response []byte
+	//var response []byte
 	var devs DevsResponse
 
 	//Signal that the thread is started
 	wg.Done()
 
+	//Now do this forever and ever!
 	for {
-		res <- request
-		response = <-request.ResultChan
+
+		//Ignore the error at the moment since it not implement in the Send() yet
+		response, _ := request.Send()
 
 		if len(response) != 0 {
 			err := json.Unmarshal(response, &devs)
@@ -201,6 +203,7 @@ func enableDisable(status, device int, name string) {
 
 	request.Send()
 }
+
 //Change the gpu engine clock
 func setGPUEngine(clock, device int, name string) {
 	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpuengine\",\"parameter\":\"%v,%v\"}", device, clock)), make(chan []byte), name}
