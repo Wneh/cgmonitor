@@ -140,44 +140,53 @@ func CheckMhsThresHold(mhs float64, lasttime int, c *Client) {
 
 //Making devs request to the cgminer and parse the result
 func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, wg *sync.WaitGroup) {
-	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), c.Name}
-
-	//var response []byte
-	var devs DevsResponse
+	//request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), c.Name}
 
 	//Signal that the thread is started
 	wg.Done()
 
+	//var devs DevsResponse
+
 	//Now do this forever and ever!
 	for {
-
-		//Ignore the error at the moment since it not implement in the Send() yet
-		response, _ := request.Send()
-
-		//Parse the data into a DevsResponse
-		devs.Parse(response)
-
-		//Also do the threshold check
-		if len(response) != 0 {
-			//Need to sum up the mhs5s to get the current total hashrate for the miner
-			mhs5s := 0.0
-			for i := 0; i < len(devs.Devs); i++ {
-				var dev = &devs.Devs[i]
-				mhs5s += dev.MHS5s
-			}
-			CheckMhsThresHold(mhs5s, devs.Status[0].When, c)
-		}
-
-		//Lock it
-		minerInfo.DevsWrap.Mu.Lock()
-		//Save the summary
-		minerInfo.DevsWrap.Devs = devs
-		//Now unlock
-		minerInfo.DevsWrap.Mu.Unlock()
+		updateDevs(c.Name,true)
 
 		//Now sleep
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
 	}
+}
+
+func updateDevs(name string, checkTresHold bool) {
+	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), name}
+
+	//var minerInfo MinerInformation
+	minerInfo := miners[name]	
+
+	var devs DevsResponse
+
+	//Ignore the error at the moment since it not implement in the Send() yet
+	response, _ := request.Send()
+
+	//Parse the data into a DevsResponse
+	devs.Parse(response)
+
+	//Also do the threshold check
+	if len(response) != 0  && checkTresHold == true{
+		//Need to sum up the mhs5s to get the current total hashrate for the miner
+		mhs5s := 0.0
+		for i := 0; i < len(devs.Devs); i++ {
+			var dev = &devs.Devs[i]
+			mhs5s += dev.MHS5s
+		}
+		CheckMhsThresHold(mhs5s, devs.Status[0].When, minerInfo.Client)
+	}
+
+	//Lock it
+	minerInfo.DevsWrap.Mu.Lock()
+	//Save the summary
+	minerInfo.DevsWrap.Devs = devs
+	//Now unlock
+	minerInfo.DevsWrap.Mu.Unlock()	
 }
 
 //Enable or disable a gpu.
@@ -388,7 +397,7 @@ type DevObject struct {
 }
 
 //Parse raw data from a response to a DevsResponse
-func (devs *DevsResponse) Parse(response []byte) (){
+func (devs *DevsResponse) Parse(response []byte) {
 	if len(response) != 0 {
 		err := json.Unmarshal(response, &devs)
 		//Check for errors

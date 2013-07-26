@@ -64,6 +64,11 @@ func EnableDisableHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("Status: %v, Device: %v\n", statusNumber, deviceNumber)
 	enableDisable(statusNumber, deviceNumber, key)
+
+	//And before we redirect we update the devs information
+	//But dont to the threshold check
+	updateDevs(key,false)
+
 	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }
 
@@ -166,6 +171,10 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 	if config == "on" {
 		writeConfig(key)
 	}
+
+	//And before we redirect we update the devs information
+	//But dont to the threshold check
+	updateDevs(key,false)
 
 	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }
