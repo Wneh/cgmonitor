@@ -149,7 +149,7 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 
 	//Now do this forever and ever!
 	for {
-		updateDevs(c.Name,true)
+		updateDevs(c.Name, true)
 
 		//Now sleep
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
@@ -160,7 +160,7 @@ func updateDevs(name string, checkTresHold bool) {
 	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), name}
 
 	//var minerInfo MinerInformation
-	minerInfo := miners[name]	
+	minerInfo := miners[name]
 
 	var devs DevsResponse
 
@@ -171,7 +171,7 @@ func updateDevs(name string, checkTresHold bool) {
 	devs.Parse(response)
 
 	//Also do the threshold check
-	if len(response) != 0  && checkTresHold == true{
+	if len(response) != 0 && checkTresHold == true {
 		//Need to sum up the mhs5s to get the current total hashrate for the miner
 		mhs5s := 0.0
 		for i := 0; i < len(devs.Devs); i++ {
@@ -186,7 +186,7 @@ func updateDevs(name string, checkTresHold bool) {
 	//Save the summary
 	minerInfo.DevsWrap.Devs = devs
 	//Now unlock
-	minerInfo.DevsWrap.Mu.Unlock()	
+	minerInfo.DevsWrap.Mu.Unlock()
 }
 
 //Enable or disable a gpu.

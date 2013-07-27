@@ -67,7 +67,7 @@ func EnableDisableHandler(w http.ResponseWriter, r *http.Request) {
 
 	//And before we redirect we update the devs information
 	//But dont to the threshold check
-	updateDevs(key,false)
+	updateDevs(key, false)
 
 	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }
@@ -174,7 +174,7 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 
 	//And before we redirect we update the devs information
 	//But dont to the threshold check
-	updateDevs(key,false)
+	updateDevs(key, false)
 
 	http.Redirect(w, r, "/miner/"+key, http.StatusFound)
 }
