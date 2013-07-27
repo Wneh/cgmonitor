@@ -32,6 +32,12 @@ func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["key"]
 
+	//Check if a miner with that name exists
+	if _, exists := miners[key]; !exists {
+		http.Error(w, "404 - No miner with that name", http.StatusNotFound)
+		return
+	}
+
 	miner := MinerWrapper{}
 	miner.Name = key
 
