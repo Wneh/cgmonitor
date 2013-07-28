@@ -140,11 +140,19 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error()+"2", http.StatusInternalServerError)
 		return
 	}
+	//Check so it's in the right interval
+	if gpuClock < 150 || gpuClock > 1200 {
+		http.Error(w, "GPUClock must be between 150-1200")
+	}
 
 	gpuMemory, err := strconv.Atoi(r.FormValue("MemoryClock"))
 	if err != nil {
 		http.Error(w, err.Error()+"3", http.StatusInternalServerError)
 		return
+	}
+	//Check so it's in the right interval
+	if gpuMemory < 75 || gpuMemory > 1575 {
+		http.Error(w, "GPUClock must be between 150-1200")
 	}
 
 	/*
@@ -157,11 +165,19 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error()+"4", http.StatusInternalServerError)
 		return
 	}
+	//Check so it's in the right interval
+	if vddc < 0.800 || vddc > 1.250 {
+		http.Error(w, "GPUClock must be between 150-1200")
+	}
 
 	intensity, err := strconv.Atoi(r.FormValue("Intensity"))
 	if err != nil {
 		http.Error(w, err.Error()+"5", http.StatusInternalServerError)
 		return
+	}
+	//Check so it's in the right interval
+	if intensity < -10 || intensity > 20 {
+		http.Error(w, "GPUClock must be between 150-1200")
 	}
 
 	config := r.FormValue("Config")
