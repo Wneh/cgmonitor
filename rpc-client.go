@@ -122,18 +122,18 @@ func CheckMhsThresHold(mhs float64, lasttime int, c *Client) {
 	case mhs >= c.MHSThresLimit:
 		//Save the last timestamp
 		c.LastSumTimestamp = lasttime
-		fmt.Printf("Hashrate: Good(%v > %v)\n", mhs, c.MHSThresLimit)
 		return
 	//Meeh - Under the limit but it hasn't gone 10 min yey
 	case mhs < c.MHSThresLimit && (lasttime-c.LastSumTimestamp) < 600:
 		//Dont to nothing just wait and see if the hashrate
 		//goes up or if it keeps down
-		fmt.Printf("Hashrate: Below threshold(%v < %v) for %v secs which is under 10 min\n", mhs, c.MHSThresLimit, (lasttime - c.LastSumTimestamp))
 		return
 	//Oh noes - Below the threshold and for longer then 10 min
 	case mhs < c.MHSThresLimit && (lasttime-c.LastSumTimestamp) >= 600:
 		//Restart the miner
-		fmt.Printf("Hashrate: Below threshold(%v < %v) for %v secs which is over 10 min\n", mhs, c.MHSThresLimit, (lasttime - c.LastSumTimestamp))
+		log.Printf("Hashrate: Below threshold(%v < %v) for %v secs which is over 10 min\n", mhs, c.MHSThresLimit, (lasttime - c.LastSumTimestamp))
+		log.Printf("Restarting miner")
+		restartMiner(c.Name)
 		return
 	}
 }
@@ -187,6 +187,12 @@ func updateDevs(name string, checkTresHold bool) {
 	minerInfo.DevsWrap.Devs = devs
 	//Now unlock
 	minerInfo.DevsWrap.Mu.Unlock()
+}
+
+func restartMiner(name string) {
+	request := RpcRequest{(fmt.Sprintf("{\"command\":\"restart\"}")), make(chan []byte), name}
+
+	request.Send()
 }
 
 //Enable or disable a gpu.
