@@ -16,10 +16,12 @@ type tomlConfig struct {
 
 //Struct for config file type [miners.<foo>] 
 type miner struct {
-	IP        string
-	Threshold float64
+	IP        string //The ip
+	Threshold float64 //The threshold that the miner cant go below(in mega hashes)
 }
 
+//"Top" struct that represent each miner.
+//This struct is used in the var miners that is called from here and there
 type MinerInformation struct {
 	Name     string         //The miners name
 	Version  string         //Version responce
@@ -28,14 +30,16 @@ type MinerInformation struct {
 	Client   *Client        //RPC Client that holds information
 }
 
+//Wrapper that contain all the information that is used for the summary request
 type SummaryWrapper struct {
-	Mu         sync.RWMutex
-	Summary    SummaryResponse
-	SummaryRow MinerRow
+	Mu         sync.RWMutex //Mutex lock
+	Summary    SummaryResponse //The response parsed to a struct
+	SummaryRow MinerRow //The response converted to rows for the web page
 }
 
+//Wrapper that contain all the information that is used for the devs request
 type DevsWrapper struct {
-	Mu   sync.RWMutex
+	Mu   sync.RWMutex 
 	Devs DevsResponse
 }
 
