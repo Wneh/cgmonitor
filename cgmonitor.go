@@ -92,6 +92,8 @@ func main() {
 	webServerMain(config.Webserverport)
 }
 
+//Check of the there is a config.toml file is the same folder as the program is runned from
+//If not it will create one
 func configExists() {
 	if _, err := os.Stat("config.toml"); err != nil {
 		if os.IsNotExist(err) {
@@ -104,6 +106,7 @@ func configExists() {
 	}
 }
 
+//Creates a basic config file
 func createExampleConf() {
 	b := []byte("webserverport = 8080\n\n[miners]\n    [miners.alpha]\n    ip = \"127.0.0.1:4028\"]\n    threshold = 0.1")
 
