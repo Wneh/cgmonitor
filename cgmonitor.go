@@ -18,6 +18,7 @@ type tomlConfig struct {
 type miner struct {
 	IP        string  //The ip
 	Threshold float64 //The threshold that the miner cant go below(in mega hashes)
+	KeepAlive bool    //If restart command should be send on sick/dead detection
 }
 
 //"Top" struct that represent each miner.
