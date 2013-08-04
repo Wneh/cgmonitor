@@ -113,39 +113,11 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 	}
 }
 
-//Checks the current mhs average value against the threshold.
-//The value should have been lower for 10 minutes 
-//before it restarts the miner  
-func CheckMhsThresHold(mhs float64, lasttime int, c *Client) {
-	switch {
-	//Good - It's abowe the limit
-	case mhs >= c.MHSThresLimit:
-		//Save the last timestamp
-		c.LastSumTimestamp = lasttime
-		return
-	//Meeh - Under the limit but it hasn't gone 10 min yey
-	case mhs < c.MHSThresLimit && (lasttime-c.LastSumTimestamp) < 600:
-		//Dont to nothing just wait and see if the hashrate
-		//goes up or if it keeps down
-		return
-	//Oh noes - Below the threshold and for longer then 10 min
-	case mhs < c.MHSThresLimit && (lasttime-c.LastSumTimestamp) >= 600:
-		//Restart the miner
-		log.Printf("Hashrate: Below threshold(%v < %v) for %v secs which is over 10 min\n", mhs, c.MHSThresLimit, (lasttime - c.LastSumTimestamp))
-		log.Printf("Restarting miner")
-		restartMiner(c.Name)
-		return
-	}
-}
-
 //Making devs request to the cgminer and parse the result
 func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, wg *sync.WaitGroup) {
-	//request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), c.Name}
 
 	//Signal that the thread is started
 	wg.Done()
-
-	//var devs DevsResponse
 
 	//Now do this forever and ever!
 	for {
@@ -159,7 +131,6 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 func updateDevs(name string, checkTresHold bool) {
 	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), name}
 
-	//var minerInfo MinerInformation
 	minerInfo := miners[name]
 
 	var devs DevsResponse
@@ -189,9 +160,33 @@ func updateDevs(name string, checkTresHold bool) {
 	minerInfo.DevsWrap.Mu.Unlock()
 }
 
+//Checks the current mhs average value against the threshold.
+//The value should have been lower for 10 minutes 
+//before it restarts the miner  
+func CheckMhsThresHold(mhs float64, lasttime int, c *Client) {
+	switch {
+	//Good - It's abowe the limit
+	case mhs >= c.MHSThresLimit:
+		//Save the last timestamp
+		c.LastSumTimestamp = lasttime
+		return
+	//Meeh - Under the limit but it hasn't gone 10 min yey
+	case mhs < c.MHSThresLimit && (lasttime-c.LastSumTimestamp) < 600:
+		//Dont to nothing just wait and see if the hashrate
+		//goes up or if it keeps down
+		return
+	//Oh noes - Below the threshold and for longer then 10 min
+	case mhs < c.MHSThresLimit && (lasttime-c.LastSumTimestamp) >= 600:
+		//Restart the miner
+		log.Printf("Hashrate: Below threshold(%v < %v) for %v secs which is over 10 min\n", mhs, c.MHSThresLimit, (lasttime - c.LastSumTimestamp))
+		log.Printf("Restarting miner")
+		restartMiner(c.Name)
+		return
+	}
+}
+
 func restartMiner(name string) {
 	request := RpcRequest{(fmt.Sprintf("{\"command\":\"restart\"}")), make(chan []byte), name}
-
 	request.Send()
 }
 
@@ -212,35 +207,30 @@ func enableDisable(status, device int, name string) {
 //Change the gpu engine clock
 func setGPUEngine(clock, device int, name string) {
 	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpuengine\",\"parameter\":\"%v,%v\"}", device, clock)), make(chan []byte), name}
-
 	request.Send()
 }
 
 //Change the gpu memory clock
 func setGPUMemory(clock, device int, name string) {
 	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpumem\",\"parameter\":\"%v,%v\"}", device, clock)), make(chan []byte), name}
-
 	request.Send()
 }
 
 //Change the vddc on gpu
 func setVDDC(voltage float64, device int, name string) {
 	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpuvddc\",\"parameter\":\"%v,%v\"}", device, voltage)), make(chan []byte), name}
-
 	request.Send()
 }
 
 //Change the intensity on the gpu
 func setIntensity(intensity, device int, name string) {
 	request := RpcRequest{(fmt.Sprintf("{\"command\":\"gpuintensity\",\"parameter\":\"%v,%v\"}", device, intensity)), make(chan []byte), name}
-
 	request.Send()
 }
 
 //Write down the config file
 func writeConfig(name string) {
 	request := RpcRequest{(fmt.Sprintf("{\"command\":\"save\",\"parameter\":\"\"}")), make(chan []byte), name}
-
 	request.Send()
 }
 
