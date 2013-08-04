@@ -115,20 +115,19 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 
 //Making devs request to the cgminer and parse the result
 func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, wg *sync.WaitGroup) {
-
 	//Signal that the thread is started
 	wg.Done()
 
 	//Now do this forever and ever!
 	for {
-		updateDevs(c.Name, true)
+		UpdateDevs(c.Name, true)
 
 		//Now sleep
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
 	}
 }
 
-func updateDevs(name string, checkTresHold bool) {
+func UpdateDevs(name string, checkTresHold bool) {
 	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), name}
 
 	minerInfo := miners[name]
@@ -159,6 +158,8 @@ func updateDevs(name string, checkTresHold bool) {
 	//Now unlock
 	minerInfo.DevsWrap.Mu.Unlock()
 }
+
+func Check
 
 //Checks the current mhs average value against the threshold.
 //The value should have been lower for 10 minutes 
