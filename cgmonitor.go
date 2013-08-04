@@ -24,11 +24,11 @@ type miner struct {
 //"Top" struct that represent each miner.
 //This struct is used in the var miners that is called from here and there
 type MinerInformation struct {
-	Name     string         //The miners name
-	Version  string         //Version responce
-	SumWrap  SummaryWrapper //Summary
-	DevsWrap DevsWrapper    //Devs
-	Client   *Client        //RPC Client that holds information
+	Name         string         //The miners name
+	SumWrap      SummaryWrapper //Summary
+	DevsWrap     DevsWrapper    //Devs
+	Client       *Client        //RPC Client that holds information
+	ClientConfig miner
 }
 
 //Wrapper that contain all the information that is used for the summary request
@@ -79,6 +79,7 @@ func main() {
 		//Create a new miner struct and add the name
 		minerStructTemp := MinerInformation{}
 		minerStructTemp.Name = minerName
+		minerStructTemp.ClientConfig = miner
 
 		//Add save it
 		miners[minerName] = &minerStructTemp

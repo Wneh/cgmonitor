@@ -127,6 +127,9 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 	}
 }
 
+//Update the devs struct
+//name = the name of the miner
+//checkTresHold = true if it should check if the miner is below the threshold set for the miner
 func UpdateDevs(name string, checkTresHold bool) {
 	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), name}
 
@@ -149,6 +152,8 @@ func UpdateDevs(name string, checkTresHold bool) {
 			mhs5s += dev.MHS5s
 		}
 		CheckMhsThresHold(mhs5s, devs.Status[0].When, minerInfo.Client)
+		//If the threshold is checked then do a alive check as well
+		CheckAliveStatus(devs, name)
 	}
 
 	//Lock it
@@ -159,7 +164,19 @@ func UpdateDevs(name string, checkTresHold bool) {
 	minerInfo.DevsWrap.Mu.Unlock()
 }
 
-func Check
+//Check every devs to see if someone is sick or dead
+//if so restart the miner
+func CheckAliveStatus(devs DevsResponse, name string) {
+	for i := 0; i < len(devs.Devs); i++ {
+		var dev = &devs.Devs[i]
+		fmt.Printf("Status: %s\n", dev.Status)
+		if dev.Status != "Alive" {
+			//Send the restart command
+			log.Printf("Dev #%s on %s got %s so sending restart command\n", dev.GPU, name, dev.Status)
+			restartMiner(name)
+		}
+	}
+}
 
 //Checks the current mhs average value against the threshold.
 //The value should have been lower for 10 minutes 
