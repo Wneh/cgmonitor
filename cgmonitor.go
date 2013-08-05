@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/BurntSushi/toml"
+	//"github.com/BurntSushi/toml"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
@@ -61,11 +62,16 @@ func main() {
 	log.Println("Begin reading config file...")
 	//Start by reading the config file
 	var config tomlConfig
-	_, err := toml.DecodeFile("config.toml", &config)
-	//Check for errors
+
+	//Read the config file
+	b, err := ioutil.ReadFile("cgmonitor.conf")
 	if err != nil {
-		log.Println(err)
-		return
+		panic(err)
+	}
+	//Parse the raw json to struct
+	err = json.Unmarshal(b, &config)
+	if err != nil {
+		panic(err)
 	}
 	log.Println("...done reading config file")
 
