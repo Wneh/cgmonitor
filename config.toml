@@ -2,11 +2,6 @@ webserverport = 8080
 
 [miners]
 	[miners.alpha]
-	ip = "192.168.1.102:4028"
+	#ip = "192.168.1.102:4028"
 	threshold = 0.4
-	keepAlive = true
-
-	[miners.beta]
-	ip = "127.0.0.1"
-	threshold = 0.0
 	keepAlive = true

@@ -169,7 +169,6 @@ func UpdateDevs(name string, checkTresHold bool) {
 func CheckAliveStatus(devs DevsResponse, name string) {
 	for i := 0; i < len(devs.Devs); i++ {
 		var dev = &devs.Devs[i]
-		fmt.Printf("Status: %s\n", dev.Status)
 		if dev.Status != "Alive" {
 			//Send the restart command
 			log.Printf("Dev #%s on %s got %s so sending restart command\n", dev.GPU, name, dev.Status)
@@ -199,6 +198,7 @@ func CheckMhsThresHold(mhs float64, lasttime int, c *Client) {
 		log.Printf("Hashrate: Below threshold(%v < %v) for %v secs which is over 10 min\n", mhs, c.MHSThresLimit, (lasttime - c.LastSumTimestamp))
 		log.Printf("Restarting miner")
 		restartMiner(c.Name)
+		c.LastSumTimestamp = lasttime
 		return
 	}
 }
