@@ -34,17 +34,60 @@
         <h1>
 <a name="cgmonitor" class="anchor" href="#cgmonitor"><span class="octicon octicon-link"></span></a>CGMonitor</h1>
 
-<p>Web interface to monitor several cgminer instances</p>
+<p>Web interface to monitor several cgminer miners</p>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<h3>
+<a name="compiled-version" class="anchor" href="#compiled-version"><span class="octicon octicon-link"></span></a>Compiled version</h3>
+
+<p>Go to <a href="https://github.com/Wneh/cgmonitor/releases">releases</a></p>
+
+<h3>
+<a name="compile-from-source" class="anchor" href="#compile-from-source"><span class="octicon octicon-link"></span></a>Compile from source</h3>
+
+<p>Start by installing <a href="http://golang.org/doc/install">Go</a> if you don't already got it. Make sure that your <a href="http://golang.org/doc/code.html">work environment</a> properly done.</p>
+
+<p>Start with downloading cgmonitor source:</p>
+
+<pre><code>$ go get github.com/Wneh/cgmonitor
+</code></pre>
+
+<p>Change to cgmonitor folder:</p>
+
+<pre><code>$ cd $GOPATH/github.com/Wneh/cgmonitor
+</code></pre>
+
+<p>And finally build it:</p>
+
+<pre><code>$ go build
+</code></pre>
+
+<p>Before you start cgmonitor you must add the miners to cgmonitor.conf(<a href="https://github.com/Wneh/cgmonitor/blob/master/exampleConfig.conf">example config with two miners</a>). You also need to allow the computer that will run cgmonitor to access the cgminer api.</p>
+
+<p>If you use arguments:</p>
+
+<pre><code>--api-allow W:&lt;ip to computer that host cgmonitor&gt;
+</code></pre>
+
+<p>or add these lines to the your cgminer config file:</p>
+
+<pre><code>"api-allow" : "W:&lt;ip to computer that host cgmonitor&gt;",
+"api-listen" : true
+</code></pre>
+
+<p>Now start cgmonitor:</p>
+
+<pre><code>$ ./cgmonitor
+</code></pre>
+
+<p>Now start your browser and navigate to <code>http://&lt;ip address&gt;:8080</code></p>
 
 <h2>
 <a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
 
 <p>Following dependencies are needed:</p>
-
-<p>toml</p>
-
-<pre><code>$ go get github.com/BurntSushi/toml
-</code></pre>
 
 <p>Gorilla Mux</p>
 
