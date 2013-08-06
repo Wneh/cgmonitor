@@ -7,9 +7,7 @@ Web interface to monitor several cgminer instances
 Go to [releases](https://github.com/Wneh/cgmonitor/releases)
 
 ###Compile from source
-Start by installing [Go](http://golang.org/doc/install) if you don't already got it.
-
-Make sure that your [work environment](http://golang.org/doc/code.html) is correct
+Start by installing [Go](http://golang.org/doc/install) if you don't already got it. Make sure that your [work environment](http://golang.org/doc/code.html) is correct
 
 Start with downloading cgmonitor source:
 
@@ -23,9 +21,18 @@ And finally build it:
 
     $ go build
 
-Before you start cgmonitor you must add the miners to cgmonitor.conf
+Before you start cgmonitor you must add the miners to cgmonitor.conf([Example config with two miners](https://github.com/Wneh/cgmonitor/blob/master/exampleConfig.conf)). You also need to allow the computer that will run cgmonitor to access the cgminer api.
 
-When your done with the config file start cgmonitor:
+If you prefer start parameters:
+
+    -api-allow W:<ip to computer that host cgmonitor>
+
+or add these lines to the your cgminer config file:
+
+    "api-allow" : "W:<ip to computer that host cgmonitor>",
+    "api-listen" : true
+
+Now start cgmonitor:
 
     $ ./cgmonitor
 
