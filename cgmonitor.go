@@ -1,8 +1,8 @@
 package main
 
 import (
-	//"github.com/BurntSushi/toml"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -46,9 +46,21 @@ type DevsWrapper struct {
 }
 
 //Global variabels
+//Map containing with the miner name as key
 var miners map[string]*MinerInformation
 
+//Logger that both write to console and file
+
 func main() {
+
+	logf, err := os.OpenFile("cgmonitor.log", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0640)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logf.Close()
+
+	log.SetOutput(io.MultiWriter(logf, os.Stdout))
+
 	log.Println("Starting server...")
 
 	//Create a waitgroup
