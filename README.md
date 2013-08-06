@@ -29,7 +29,7 @@ When your done with the config file start cgmonitor:
 
     $ ./cgmonitor
 
-Now start your browser and navigate to http://<ip address>:8080
+Now start your browser and navigate to `http://<ip address>:8080`
 
 ##Dependencies
 Following dependencies are needed:
