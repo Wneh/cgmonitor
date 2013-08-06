@@ -1,5 +1,5 @@
 #CGMonitor
-Web interface to monitor several cgminer instances
+Web interface to monitor several cgminer miners
 
 ##Installation
 
