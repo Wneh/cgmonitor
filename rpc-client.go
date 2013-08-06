@@ -99,6 +99,9 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 
 			//Update the summaryrow
 			summaryRow = MinerRow{c.Name, summary.Summary[0].Accepted, summary.Summary[0].Rejected, summary.Summary[0].MHSAv, summary.Summary[0].BestShare}
+		} else {
+			log.Println("No response so wait somee extra before try again")
+			time.Sleep(time.Duration(c.RefreshInterval*2) * time.Second)
 		}
 		//Lock it
 		minerInfo.SumWrap.Mu.Lock()
@@ -120,7 +123,12 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 
 	//Now do this forever and ever!
 	for {
-		UpdateDevs(c.Name, true)
+		//If it return false it has failed to connect
+		//So wait abit more before next time
+		if UpdateDevs(c.Name, true) == false {
+			log.Println("No response so wait somee extra before try again")
+			time.Sleep(time.Duration(c.RefreshInterval*2) * time.Second)
+		}
 
 		//Now sleep
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
@@ -130,7 +138,8 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 //Update the devs struct
 //name = the name of the miner
 //checkTresHold = true if it should check if the miner is below the threshold set for the miner
-func UpdateDevs(name string, checkTresHold bool) {
+func UpdateDevs(name string, checkTresHold bool) (ok bool) {
+	ok = false
 	request := RpcRequest{"{\"command\":\"devs\"}", make(chan []byte), name}
 
 	minerInfo := miners[name]
@@ -143,17 +152,22 @@ func UpdateDevs(name string, checkTresHold bool) {
 	//Parse the data into a DevsResponse
 	devs.Parse(response)
 
-	//Also do the threshold check
-	if len(response) != 0 && checkTresHold == true {
-		//Need to sum up the mhs5s to get the current total hashrate for the miner
-		mhs5s := 0.0
-		for i := 0; i < len(devs.Devs); i++ {
-			var dev = &devs.Devs[i]
-			mhs5s += dev.MHS5s
+	//If we got data back
+	if len(response) != 0 {
+		//Set ok to true
+		ok = true
+		//Should we do a treshold check?
+		if checkTresHold == true {
+			//Need to sum up the mhs5s to get the current total hashrate for the miner
+			mhs5s := 0.0
+			for i := 0; i < len(devs.Devs); i++ {
+				var dev = &devs.Devs[i]
+				mhs5s += dev.MHS5s
+			}
+			CheckMhsThresHold(mhs5s, devs.Status[0].When, minerInfo.Client)
+			//If the threshold is checked then do a alive check as well
+			CheckAliveStatus(devs, name)
 		}
-		CheckMhsThresHold(mhs5s, devs.Status[0].When, minerInfo.Client)
-		//If the threshold is checked then do a alive check as well
-		CheckAliveStatus(devs, name)
 	}
 
 	//Lock it
@@ -162,6 +176,8 @@ func UpdateDevs(name string, checkTresHold bool) {
 	minerInfo.DevsWrap.Devs = devs
 	//Now unlock
 	minerInfo.DevsWrap.Mu.Unlock()
+
+	return
 }
 
 //Check every devs to see if someone is sick or dead

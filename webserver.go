@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -69,7 +68,6 @@ func EnableDisableHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	log.Printf("Status: %v, Device: %v\n", statusNumber, deviceNumber)
 	enableDisable(statusNumber, deviceNumber, key)
 
 	//And before we redirect we update the devs information

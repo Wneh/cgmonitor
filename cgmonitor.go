@@ -10,7 +10,7 @@ import (
 )
 
 //Struct representing the config.toml
-type tomlConfig struct {
+type Config struct {
 	Webserverport int              //Webserver port
 	Miners        map[string]miner //Key is the miner name.
 }
@@ -52,13 +52,15 @@ var miners map[string]*MinerInformation
 //Logger that both write to console and file
 
 func main() {
-
+	//Open the log file
 	logf, err := os.OpenFile("cgmonitor.log", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0640)
 	if err != nil {
 		log.Fatal(err)
 	}
+	//Make sure that we close it later on
 	defer logf.Close()
 
+	//Set log to both file and console
 	log.SetOutput(io.MultiWriter(logf, os.Stdout))
 
 	log.Println("Starting server...")
@@ -73,7 +75,7 @@ func main() {
 
 	log.Println("Begin reading config file...")
 	//Start by reading the config file
-	var config tomlConfig
+	var config Config
 
 	//Read the config file
 	b, err := ioutil.ReadFile("cgmonitor.conf")
@@ -115,7 +117,7 @@ func main() {
 //Check of the there is a config.toml file is the same folder as the program is runned from
 //If not it will create one
 func configExists() {
-	if _, err := os.Stat("config.toml"); err != nil {
+	if _, err := os.Stat("cgmonitor.conf"); err != nil {
 		if os.IsNotExist(err) {
 			// file does not exist
 			log.Println("No config file found, creating example config file.")
@@ -128,9 +130,18 @@ func configExists() {
 
 //Creates a basic config file
 func createExampleConf() {
-	b := []byte("webserverport = 8080\n\n[miners]\n    [miners.alpha]\n    ip = \"127.0.0.1:4028\"]\n    threshold = 0.1")
+	//Create the Config struct and add some values
+	tempConf := Config{8080, make(map[string]miner)}
+	tempConf.Miners["alpha"] = miner{"127.0.0.1:4028", 0.1, true}
 
-	err := ioutil.WriteFile("config.toml", b, 0644)
+	//Convert it to json
+	b, err := json.MarshalIndent(tempConf, "", "    ")
+	if err != nil {
+		log.Println("error:", err)
+	}
+
+	//And save it to file
+	err = ioutil.WriteFile("cgmonitor.conf", b, 0644)
 	if err != nil {
 		panic(err)
 	}
