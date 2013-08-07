@@ -130,13 +130,13 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 	//Parse the values
 	deviceNumber, err := strconv.Atoi(r.FormValue("device"))
 	if err != nil {
-		http.Error(w, err.Error()+"1", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	gpuClock, err := strconv.Atoi(r.FormValue("GPUClock"))
 	if err != nil {
-		http.Error(w, err.Error()+"2", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	//Check so it's in the right interval
@@ -146,7 +146,7 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 
 	gpuMemory, err := strconv.Atoi(r.FormValue("MemoryClock"))
 	if err != nil {
-		http.Error(w, err.Error()+"3", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	//Check so it's in the right interval
@@ -161,7 +161,7 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 	 */
 	vddc, err := strconv.ParseFloat(r.FormValue("Voltage"), 128)
 	if err != nil {
-		http.Error(w, err.Error()+"4", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	//Check so it's in the right interval
@@ -171,7 +171,7 @@ func GPUHandler(w http.ResponseWriter, r *http.Request) {
 
 	intensity, err := strconv.Atoi(r.FormValue("Intensity"))
 	if err != nil {
-		http.Error(w, err.Error()+"5", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	//Check so it's in the right interval

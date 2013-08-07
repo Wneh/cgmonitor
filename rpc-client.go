@@ -100,7 +100,7 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 			//Update the summaryrow
 			summaryRow = MinerRow{c.Name, summary.Summary[0].Accepted, summary.Summary[0].Rejected, summary.Summary[0].MHSAv, summary.Summary[0].BestShare}
 		} else {
-			log.Println("No response so wait somee extra before try again")
+			//No response so wait somee extra before try again
 			time.Sleep(time.Duration(c.RefreshInterval*2) * time.Second)
 		}
 		//Lock it
@@ -126,7 +126,7 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 		//If it return false it has failed to connect
 		//So wait abit more before next time
 		if UpdateDevs(c.Name, true) == false {
-			log.Println("No response so wait somee extra before try again")
+			//No response so wait somee extra before try again
 			time.Sleep(time.Duration(c.RefreshInterval*2) * time.Second)
 		}
 
@@ -187,7 +187,7 @@ func CheckAliveStatus(devs DevsResponse, name string) {
 		var dev = &devs.Devs[i]
 		if dev.Status != "Alive" {
 			//Send the restart command
-			log.Printf("Dev #%s on %s got %s so sending restart command\n", dev.GPU, name, dev.Status)
+			log.Printf("Dev #%s on %s got %s status so sending restart command\n", dev.GPU, name, dev.Status)
 			restartMiner(name)
 		}
 	}
@@ -212,7 +212,7 @@ func CheckMhsThresHold(mhs float64, lasttime int, c *Client) {
 	case mhs < c.MHSThresLimit && (lasttime-c.LastSumTimestamp) >= 600:
 		//Restart the miner
 		log.Printf("Hashrate: Below threshold(%v < %v) for %v secs which is over 10 min\n", mhs, c.MHSThresLimit, (lasttime - c.LastSumTimestamp))
-		log.Printf("Restarting miner")
+		log.Printf("Restarting %s miner\n", c.Name)
 		restartMiner(c.Name)
 		c.LastSumTimestamp = lasttime
 		return
@@ -274,7 +274,7 @@ func createConnection(ip string) net.Conn {
 
 	//Check for errors
 	if err != nil {
-		log.Printf("createConnection: %s, check if the ip is correct or cgminer's api is enabled", err)
+		log.Printf("createConnection: %s, check if the ip is correct or cgminer's api is enabled\n", err)
 		return nil
 	}
 	return conn
