@@ -7,7 +7,7 @@ Web interface to monitor several cgminer miners
 Go to [releases](https://github.com/Wneh/cgmonitor/releases)
 
 ###Compile from source
-Start by installing [Go](http://golang.org/doc/install) if you don't already got it. Make sure that your [work environment](http://golang.org/doc/code.html) properly done.
+Start by installing [Go](http://golang.org/doc/install) if you don't already got it. Make sure that your [work environment](http://golang.org/doc/code.html) properly done. You will also need to install Git.
 
 Start with downloading cgmonitor source:
 
