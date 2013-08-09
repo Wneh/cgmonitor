@@ -27,6 +27,23 @@ func webServerMain(port int) {
 	http.ListenAndServe(":"+strconv.Itoa(port), nil)
 }
 
+func loginHandler(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+        /*
+         *Get the session cookie
+         */
+
+        //If we did not found a session redirect to login page
+        //if !titleValidator.MatchString(title) {
+            //http.NotFound(w, r)
+            //return
+        //}
+
+        //Else send forward to the page that was requested
+        fn(w, r)
+    }
+}
+
 //Request handler for a single miner information
 func MinerHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
