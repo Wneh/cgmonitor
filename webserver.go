@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"html/template"
 	"net/http"
 	"path/filepath"
@@ -12,36 +13,78 @@ import (
 //Precache all templates in folder templates at start
 var templates = template.Must(template.ParseFiles(filepath.Join("templates", "miners.html"),
 	filepath.Join("templates", "index.html"),
-	filepath.Join("templates", "miner.html")))
+	filepath.Join("templates", "miner.html"),
+	filepath.Join("templates", "login.html")))
+
+//Da cookie store
+//TODO: change the seed to something crypto random safe maybe?
+var store = sessions.NewCookieStore([]byte("something-very-secret"))
 
 //Starts the webserver
 func webServerMain(port int) {
 	r := mux.NewRouter()
-	r.HandleFunc("/", HomeHandler)
+	r.HandleFunc("/", login(HomeHandler))
 	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}", MinerHandler)
 	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}/onoff", EnableDisableHandler)
 	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}/gpu", GPUHandler)
 	r.HandleFunc("/miners", MinersHandler)
+	r.HandleFunc("/login", LoginHandler)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./web-root/")))
 	http.Handle("/", r)
 	http.ListenAndServe(":"+strconv.Itoa(port), nil)
 }
 
-func loginHandler(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
+func login(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-        /*
-         *Get the session cookie
-         */
+		/*
+		 *Get the session cookie
+		 */
+		session, err := store.Get(r, "GOSESSION")
 
-        //If we did not found a session redirect to login page
-        //if !titleValidator.MatchString(title) {
-            //http.NotFound(w, r)
-            //return
-        //}
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
 
-        //Else send forward to the page that was requested
-        fn(w, r)
-    }
+		/*
+		 * Check if this session has a login value
+		 * If not this was a new session so redirect to login
+		 * Otherwise continue to the page that was requested
+		 */
+		_, ok := session.Values["login"]
+
+		session.Save(r, w)
+
+		if !ok {
+			fmt.Println("New session so redirect to login")
+			//Send to login page
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+
+		//Else send forward to the page that was requested
+		fmt.Println("Old session so send threw")
+		fn(w, r)
+	}
+}
+
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	/*
+	 *Get the session cookie
+	 */
+	session, err := store.Get(r, "GOSESSION")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
+
+	//Atm set that the person is logged in when they visit the login page
+	session.Values["login"] = true
+	session.Save(r, w)
+
+	err = templates.ExecuteTemplate(w, "login.html", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 //Request handler for a single miner information
