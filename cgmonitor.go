@@ -1,18 +1,24 @@
 package main
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"sync"
+	"time"
 )
 
 //Struct representing the config.toml
 type Config struct {
 	Webserverport int              //Webserver port
 	Miners        map[string]miner //Key is the miner name.
+	Users         map[string]user  //Users for login
 }
 
 //Struct for config file type [miners.<foo>] 
@@ -20,6 +26,13 @@ type miner struct {
 	IP        string  //The ip
 	Threshold float64 //The threshold that the miner cant go below(in mega hashes)
 	KeepAlive bool    //If restart command should be send on sick/dead detection
+}
+
+//Config file struct for user
+type user struct {
+	Username string //The username - used as key in Users map
+	Salt     string //The salt used for this user
+	Hash     string //Password salted with the salt and hashed
 }
 
 //"Top" struct that represent each miner.
@@ -49,7 +62,8 @@ type DevsWrapper struct {
 //Map containing with the miner name as key
 var miners map[string]*MinerInformation
 
-//Logger that both write to console and file
+//Config file
+var config Config
 
 func main() {
 	//Open the log file
@@ -63,31 +77,27 @@ func main() {
 	//Set log to both file and console
 	log.SetOutput(io.MultiWriter(logf, os.Stdout))
 
+	log.Println("Begin reading config file...")
+	//Check that config file exists
+	configExists()
+	//Read the config file
+	config.Load()
+	log.Println("...done reading config file")
+
+	//Check if the user wants to add a new user for the web
+	if len(os.Args) > 1 {
+		if os.Args[1] == "--addNewUser" {
+			addNewUser()
+			return
+		}
+	}
+
 	log.Println("Starting server...")
 
 	//Create a waitgroup
 	wg := new(sync.WaitGroup)
 
 	miners = make(map[string]*MinerInformation)
-
-	//Check that config file exists
-	configExists()
-
-	log.Println("Begin reading config file...")
-	//Start by reading the config file
-	var config Config
-
-	//Read the config file
-	b, err := ioutil.ReadFile("cgmonitor.conf")
-	if err != nil {
-		panic(err)
-	}
-	//Parse the raw json to struct
-	err = json.Unmarshal(b, &config)
-	if err != nil {
-		panic(err)
-	}
-	log.Println("...done reading config file")
 
 	log.Println("Begin starting rpc-client threads...")
 	//Start to grab information from every miner
@@ -131,11 +141,71 @@ func configExists() {
 //Creates a basic config file
 func createExampleConf() {
 	//Create the Config struct and add some values
-	tempConf := Config{8080, make(map[string]miner)}
+	tempConf := Config{8080, make(map[string]miner), make(map[string]user)}
 	tempConf.Miners["alpha"] = miner{"127.0.0.1:4028", 0.1, true}
 
+	//Save it to cgmonitor.conf
+	tempConf.Save()
+}
+
+func addNewUser() {
+	//Print warning
+	fmt.Println("###################################################")
+	fmt.Println("# Note:                                           #")
+	fmt.Println("# ----------------------------------------------- #")
+	fmt.Println("# DONT use a password that you have one any site. #")
+	fmt.Println("# Since I can't guarantee that my login           #")
+	fmt.Println("# implementation is secure.                       #")
+	fmt.Println("# ----------------------------------------------- #")
+	fmt.Println("# Confirm that you have understood by typing: yes #")
+	fmt.Println("###################################################")
+	var confirm string
+	fmt.Scan(&confirm)
+	//And check that the user have understood the warning text
+	if confirm != "yes" {
+		fmt.Println("CGmonitor will now exit since you didn't type: yes")
+		return
+	}
+
+	//Grab input from the user
+	fmt.Println("username:")
+	var username string
+	fmt.Scan(&username)
+	fmt.Println("password:")
+	var password string
+	fmt.Scan(&password)
+
+	//fmt.Printf("Username: %s \nPassword: %s\n", username, password)
+
+	//Create the new user
+	var newUser user
+
+	newUser.Username = username
+	//Generate a salt for this user
+	newUser.Salt = randomString(64)
+	//Hash the password with the salt
+	newUser.Hash = hashPassword(password, newUser.Salt)
+
+	//Save the user
+	config.AddUser(newUser)
+
+	log.Println("New user created:", newUser.Username)
+}
+
+//Add a user and save the config to file
+func (c *Config) AddUser(newUser user) {
+	if c.Users == nil {
+		c.Users = make(map[string]user)
+	}
+	c.Users[newUser.Username] = newUser
+	//Save the new config to file
+	c.Save()
+}
+
+//Saves the config file to cgmonitor.conf
+func (c *Config) Save() {
 	//Convert it to json
-	b, err := json.MarshalIndent(tempConf, "", "    ")
+	b, err := json.MarshalIndent(c, "", "    ")
 	if err != nil {
 		log.Println("error:", err)
 	}
@@ -145,4 +215,37 @@ func createExampleConf() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (c *Config) Load() {
+	b, err := ioutil.ReadFile("cgmonitor.conf")
+	if err != nil {
+		panic(err)
+	}
+	//Parse the raw json to struct
+	err = json.Unmarshal(b, c)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func randomString(l int) string {
+	rand.Seed(time.Now().UTC().UnixNano())
+	bytes := make([]byte, l)
+	for i := 0; i < l; i++ {
+		bytes[i] = byte(randInt(65, 90))
+	}
+	return string(bytes)
+}
+
+func randInt(min int, max int) int {
+	return min + rand.Intn(max-min)
+}
+
+func hashPassword(password, salt string) string {
+	h := sha1.New()
+	//fmt.Println(salt+password)
+	io.WriteString(h, salt+password)
+	//fmt.Printf("%x", h.Sum(nil))
+	return string(hex.EncodeToString(h.Sum(nil)))
 }
