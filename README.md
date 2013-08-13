@@ -25,7 +25,7 @@ Before you start cgmonitor you must add the miners to cgmonitor.conf([example co
 
 If you use arguments:
 
-    --api-allow W:<ip to computer that host cgmonitor>
+   --api-listen --api-allow W:<ip to computer that host cgmonitor>
 
 or add these lines to the your cgminer config file:
 
