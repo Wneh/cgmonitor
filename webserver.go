@@ -24,10 +24,10 @@ var store = sessions.NewCookieStore([]byte("something-very-secret"))
 func webServerMain(port int) {
 	r := mux.NewRouter()
 	r.HandleFunc("/", login(HomeHandler))
-	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}", MinerHandler)
-	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}/onoff", EnableDisableHandler)
-	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}/gpu", GPUHandler)
-	r.HandleFunc("/miners", MinersHandler)
+	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}", login(MinerHandler))
+	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}/onoff", login(EnableDisableHandler))
+	r.HandleFunc("/miner/{key:[a-zA-Z0-9]+}/gpu", login(GPUHandler))
+	r.HandleFunc("/miners", login(MinersHandler))
 	r.HandleFunc("/login", LoginHandler)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./web-root/")))
 	http.Handle("/", r)
@@ -50,12 +50,20 @@ func login(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 		 * If not this was a new session so redirect to login
 		 * Otherwise continue to the page that was requested
 		 */
-		_, ok := session.Values["login"]
+		isLogin, ok := session.Values["login"]
 
 		session.Save(r, w)
 
+		//Login value did not exist so not login
 		if !ok {
 			fmt.Println("New session so redirect to login")
+			//Send to login page
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+
+		//They key existed so check if set to true
+		if isLogin == false {
 			//Send to login page
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
@@ -77,9 +85,35 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 
-	//Atm set that the person is logged in when they visit the login page
-	session.Values["login"] = true
-	session.Save(r, w)
+	//Check the username exist
+	isLogin, ok := session.Values["login"]
+
+	//The user is already login
+	if ok && isLogin == true {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	//Check if the user is trying to login
+	//Grab the username and password
+	username := r.FormValue("Username")
+	password := r.FormValue("Password")
+
+	fmt.Println(username, password)
+
+	if username != "" && password != "" {
+		//Check if the username exist
+		user, exist := config.Users[username]
+		if exist == true {
+			//Check if the password is correct
+			if user.CheckPassword(password) {
+				session.Values["login"] = true
+				session.Save(r, w)
+				http.Redirect(w, r, "/", http.StatusFound)
+				return
+			}
+		}
+	}
 
 	err = templates.ExecuteTemplate(w, "login.html", nil)
 	if err != nil {

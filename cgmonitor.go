@@ -202,6 +202,13 @@ func (c *Config) AddUser(newUser user) {
 	c.Save()
 }
 
+func (u *user) CheckPassword(pw string) bool {
+	if u.Hash != hashPassword(pw, u.Salt) {
+		return false
+	}
+	return true
+}
+
 //Saves the config file to cgmonitor.conf
 func (c *Config) Save() {
 	//Convert it to json
