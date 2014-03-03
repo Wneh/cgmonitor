@@ -45,7 +45,9 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation, wg *syn
 		//If c.Conn is still nil then we couldn't connect
 		//So send back an empty slice of bytes
 		if c.Conn == nil {
+			log.Printf("[rpcClient] - Could not connect to the client - %s\n",c.Name)
 			r.ResultChan <- make([]byte, 0)
+
 		} else {
 			//Send the request to the cgminer
 			b := sendCommand(&c.Conn, r.Request)
@@ -53,10 +55,13 @@ func rpcClient(name, ip string, refInt int, minerInfo *MinerInformation, wg *syn
 			 * Note:
 			 *
 			 * It seems that cgminer close the tcp connection
-			 * after each call so we need to reset it for
+			 * after each call so we need to reset it for i := 0; i < count; i++ {
+			 	
+			 }
 			 * the next rpc-call
 			 */
 			c.Conn.Close()
+
 			//And send back the result
 			r.ResultChan <- b
 		}
@@ -86,12 +91,14 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 	wg.Done()
 
 	for {
+		summary := SummaryResponse{[]StatusObject{StatusObject{}}, []SummaryObject{SummaryObject{}}, 0}
 		res <- request
 		response = <-request.ResultChan
 
 		//If we got the response back unmarshal it
 		if len(response) != 0 {
 			err := json.Unmarshal(response, &summary)
+
 			//Check for errors
 			if err != nil {
 				fmt.Println(err.Error())
@@ -101,7 +108,8 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 			summaryRow = MinerRow{c.Name, summary.Summary[0].Accepted, summary.Summary[0].Rejected, summary.Summary[0].MHSAv, summary.Summary[0].BestShare}
 		} else {
 			//No response so wait somee extra before try again
-			time.Sleep(time.Duration(c.RefreshInterval*2) * time.Second)
+			log.Println("Failed to fetch new data from " + c.Name)
+			summaryRow = MinerRow{c.Name, 0, 0, 0, 0}
 		}
 		//Lock it
 		minerInfo.SumWrap.Mu.Lock()
@@ -111,6 +119,10 @@ func SummaryHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Clien
 		//Now unlock
 		minerInfo.SumWrap.Mu.Unlock()
 
+		//Check if we should sleep some extra
+		if(len(response) == 0){
+			time.Sleep(time.Duration(c.RefreshInterval*2) * time.Second)	
+		}
 		//Now sleep
 		time.Sleep(time.Duration(c.RefreshInterval) * time.Second)
 	}
@@ -126,6 +138,7 @@ func DevsHandler(res chan<- RpcRequest, minerInfo *MinerInformation, c *Client, 
 		//If it return false it has failed to connect
 		//So wait abit more before next time
 		if UpdateDevs(c.Name, true) == false {
+			log.Println("Failed to fetch new data from: " + c.Name)
 			//No response so wait somee extra before try again
 			time.Sleep(time.Duration(c.RefreshInterval*2) * time.Second)
 		}
@@ -270,11 +283,11 @@ func writeConfig(name string) {
 
 // Returns a TCP connection to the ip 
 func createConnection(ip string) net.Conn {
-	conn, err := net.Dial("tcp", ip)
+	conn, err := net.DialTimeout("tcp", ip,10*time.Second)
 
 	//Check for errors
 	if err != nil {
-		log.Printf("createConnection: %s, check if the ip is correct or cgminer's api is enabled\n", err)
+		log.Printf("createConnection: %s, check if the ip is correct or cgminer's api is enabled or if the miner is offline\n", err)
 		return nil
 	}
 	return conn
